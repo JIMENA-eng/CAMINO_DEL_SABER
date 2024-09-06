@@ -41,6 +41,7 @@ QUESTIONS = [
 
 # Fuente para texto
 font = pygame.font.Font(None, 36)
+small_font = pygame.font.Font(None, 24)  # Fuente pequeña para el conteo
 
 # Definir clase Jugador
 class Player:
@@ -96,9 +97,9 @@ def draw_board():
     for player in players:
         pygame.draw.circle(screen, player.color, (player.x + 40, player.y + 40), 30)
 
-    # Mostrar el contador de respuestas correctas
+    # Mostrar el contador de respuestas correctas en tamaño pequeño
     for player in players:
-        text_surface = font.render(f"{player.name}: {player.correct_answers} respuestas correctas", True, BLACK)
+        text_surface = small_font.render(f"{player.name}: {player.correct_answers}", True, BLACK)
         screen.blit(text_surface, (20, 20 + players.index(player) * 30))
 
 # Mostrar texto en la pantalla
@@ -112,6 +113,24 @@ def countdown_timer(start_time, duration=10):
     remaining_time = max(0, duration - int(elapsed))
     return remaining_time
 
+# Mostrar la pantalla de preguntas
+def show_question_screen(question, options, selected_option, remaining_time):
+    screen.fill(WHITE)
+
+    # Mostrar pregunta
+    question_text = font.render(question, True, BLACK)
+    screen.blit(question_text, (20, 20))
+
+    # Mostrar opciones de respuesta
+    for i, option in enumerate(options):
+        color = GREEN if i == selected_option else BLACK
+        option_text = font.render(f"{i + 1}. {option}", True, color)
+        screen.blit(option_text, (20, 100 + i * 50))
+
+    # Mostrar temporizador
+    timer_text = font.render(f"Tiempo restante: {remaining_time}s", True, RED)
+    screen.blit(timer_text, (20, HEIGHT - 50))
+
 # Bucle principal del juego
 game_over = False
 message = ""
@@ -122,6 +141,9 @@ correct_answer = ""
 options = []
 selected_option = 0
 start_time = 0
+
+# Crear reloj para controlar el frame rate
+clock = pygame.time.Clock()
 
 while not game_over:
     for event in pygame.event.get():
@@ -171,32 +193,23 @@ while not game_over:
                     players[current_player].correct_answers += 1
                 else:
                     answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
-                question_active = False  # La pregunta ha sido contestada
+                question_active = False  # Terminar el estado de pregunta
 
-    # Actualizar el temporizador
+    # Lógica de temporizador de preguntas
     if question_active:
-        remaining_time = countdown_timer(start_time, 10)
-        if remaining_time == 0:  # Se acabó el tiempo
-            answer_message = f"Se acabó el tiempo. La respuesta correcta era: {correct_answer}"
+        remaining_time = countdown_timer(start_time)
+        if remaining_time == 0:
+            answer_message = f"Tiempo agotado. La respuesta era: {correct_answer}"
             question_active = False
 
-    # Dibujar tablero y actualizar pantalla
+    # Actualizar pantalla
     draw_board()
-
-    # Mostrar el mensaje del dado y movimiento
-    if message:
-        display_text(message, BLACK, 0)
-
-    # Mostrar la pregunta, si hay una activa
     if question_active:
-        display_text("Pregunta: " + question_message, GREEN, 30)
-        for i, option in enumerate(options):
-            color = GREEN if i == selected_option else BLACK
-            display_text(f"{i+1}. {option}", color, 60 + i * 30)
-        display_text(f"Tiempo restante: {remaining_time}s", RED, 150)
-
-    # Mostrar la respuesta si ha sido respondida
+        show_question_screen(question_message, options, selected_option, remaining_time)
+    if message:
+        display_text(message, BLACK, y_offset=0)
     if answer_message:
-        display_text(answer_message, RED, 90)
+        display_text(answer_message, RED, y_offset=50)
 
     pygame.display.update()
+    clock.tick(30)  # Limitar a 30 fotogramas por segundo
