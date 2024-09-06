@@ -6,120 +6,105 @@ import random
 pygame.init()
 
 # Configuración de la pantalla
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Monopoly Simplificado")
+pygame.display.set_caption("Juego de Camino Simple")
 
 # Definir colores
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+RED = (255, 0, 0)
 
-# Definir variables del jugador
+# Definir posiciones de las casillas
+BOARD_POSITIONS = [(100 * i + 50, 200) for i in range(8)]
+
+# Definir preguntas aleatorias
+QUESTIONS = [
+    {"question": "¿Cuál es el planeta más cercano al sol?", "answer": "Mercurio"},
+    {"question": "¿Cuántos continentes hay en la Tierra?", "answer": "7"},
+    {"question": "¿Qué gas es esencial para la respiración?", "answer": "Oxígeno"},
+    {"question": "¿En qué continente se encuentra Egipto?", "answer": "África"},
+]
+
+# Definir clase Jugador
 class Player:
-    def __init__(self, name, color, money=1500):
+    def __init__(self, name, color):
         self.name = name
         self.color = color
         self.position = 0
-        self.money = money
-        self.properties = []
 
     def move(self, steps):
-        self.position = (self.position + steps) % len(BOARD_POSITIONS)
-
-# Definir propiedades
-class Property:
-    def __init__(self, name, cost, rent):
-        self.name = name
-        self.cost = cost
-        self.rent = rent
-        self.owner = None
-
-# Crear el tablero
-BOARD_POSITIONS = [
-    (700, 700), (600, 700), (500, 700), (400, 700), (300, 700), (200, 700), (100, 700), (50, 700),
-    (50, 600), (50, 500), (50, 400), (50, 300), (50, 200), (50, 100), (50, 50), (150, 50),
-    (250, 50), (350, 50), (450, 50), (550, 50), (650, 50), (750, 50), (750, 150), (750, 250),
-    (750, 350), (750, 450), (750, 550), (750, 650)
-]
-
-# Definir las propiedades (con un precio y una renta simplificada)
-properties = [
-    Property("Inicio", 0, 0),
-    Property("Avenida Mediterráneo", 60, 2),
-    Property("Comunidad", 0, 0),
-    Property("Avenida Báltica", 60, 4),
-    Property("Impuestos", 0, 0),
-    Property("Ferrocarril Reading", 200, 25),
-    Property("Avenida Oriental", 100, 6),
-    Property("Suerte", 0, 0),
-    Property("Avenida Vermont", 100, 6),
-    Property("Avenida Connecticut", 120, 8),
-    # Añadir más propiedades según sea necesario
-]
+        self.position = min(self.position + steps, len(BOARD_POSITIONS) - 1)
 
 # Crear jugadores
-players = [Player("Jugador 1", BLUE), Player("Jugador 2", RED)]
+user_player = Player("Usuario", BLUE)
+bot_player = Player("Bot", RED)
+players = [user_player, bot_player]
 current_player = 0
 
 # Crear un dado virtual
 def roll_dice():
     return random.randint(1, 6)
 
+# Pregunta aleatoria
+def ask_random_question():
+    question = random.choice(QUESTIONS)
+    print(f"Pregunta: {question['question']}")
+    return question['answer']
+
 # Dibujar el tablero y los jugadores
 def draw_board():
     screen.fill(WHITE)
-    
+
     # Dibujar casillas
     for pos in BOARD_POSITIONS:
-        pygame.draw.rect(screen, BLACK, pygame.Rect(pos[0], pos[1], 100, 100), 2)
-    
-    # Dibujar propiedades
-    for idx, prop in enumerate(properties):
-        pos = BOARD_POSITIONS[idx]
-        if prop.owner:
-            pygame.draw.rect(screen, prop.owner.color, pygame.Rect(pos[0]+10, pos[1]+10, 80, 80))
-    
+        pygame.draw.rect(screen, BLACK, pygame.Rect(pos[0], pos[1], 80, 80), 2)
+
     # Dibujar jugadores
     for player in players:
         pos = BOARD_POSITIONS[player.position]
-        pygame.draw.circle(screen, player.color, (pos[0] + 50, pos[1] + 50), 20)
-
-# Lógica de comprar propiedad
-def buy_property(player, property):
-    if property.owner is None and property.cost > 0:
-        if player.money >= property.cost:
-            player.money -= property.cost
-            player.properties.append(property)
-            property.owner = player
-            print(f"{player.name} compró {property.name} por ${property.cost}")
+        pygame.draw.circle(screen, player.color, (pos[0] + 40, pos[1] + 40), 30)
 
 # Bucle principal del juego
-while True:
+game_over = False
+while not game_over:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:  # Presionar espacio para tirar el dado
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if not game_over:
+                # El jugador actual lanza el dado
                 dice_roll = roll_dice()
                 print(f"{players[current_player].name} tiró un {dice_roll}")
-                
-                # Mover al jugador
+
+                # Mover al jugador actual
                 players[current_player].move(dice_roll)
-                player_pos = players[current_player].position
-                current_property = properties[player_pos]
+                current_position = players[current_player].position
+                print(f"{players[current_player].name} se movió a la casilla {current_position + 1}")
 
-                print(f"{players[current_player].name} está en {current_property.name}")
+                # Si cae en una casilla con una pregunta
+                if current_position in random.sample(range(1, 7), 2):  # Casillas con preguntas aleatorias
+                    correct_answer = ask_random_question()
+                    if players[current_player] == user_player:
+                        user_answer = input("Tu respuesta: ")
+                        if user_answer.lower() == correct_answer.lower():
+                            print("¡Respuesta correcta!")
+                        else:
+                            print(f"Respuesta incorrecta. La correcta era: {correct_answer}")
+                    else:
+                        print(f"El {players[current_player].name} pasó por una casilla de pregunta.")
 
-                # Ver si el jugador puede comprar la propiedad
-                if current_property.owner is None:
-                    buy_property(players[current_player], current_property)
+                # Verificar si el jugador actual ha llegado al final
+                if current_position == len(BOARD_POSITIONS) - 1:
+                    print(f"{players[current_player].name} ha ganado el juego!")
+                    game_over = True
 
                 # Cambiar de turno
-                current_player = (current_player + 1) % len(players)
+                current_player = (current_player + 1) % 2
 
-    # Dibujar el tablero y actualizar la pantalla
+    # Dibujar tablero y actualizar pantalla
     draw_board()
     pygame.display.update()
