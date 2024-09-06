@@ -26,10 +26,12 @@ BOARD_POSITIONS = [
 
 # Definir preguntas aleatorias
 QUESTIONS = [
-    {"question": "¿Cuál es el planeta más cercano al sol?", "answer": "Mercurio"},
-    {"question": "¿Cuántos continentes hay en la Tierra?", "answer": "7"},
-    {"question": "¿Qué gas es esencial para la respiración?", "answer": "Oxígeno"},
-    {"question": "¿En qué continente se encuentra Egipto?", "answer": "África"},
+    {"question": "¿Cuál es el planeta más cercano al sol?", "options": ["Mercurio", "Venus", "Tierra", "Marte"], "answer": "Mercurio"},
+    {"question": "¿Cuántos continentes hay en la Tierra?", "options": ["5", "6", "7", "8"], "answer": "7"},
+    {"question": "¿Qué gas es esencial para la respiración?", "options": ["Oxígeno", "Hidrógeno", "Nitrógeno", "Helio"], "answer": "Oxígeno"},
+    {"question": "¿En qué continente se encuentra Egipto?", "options": ["África", "Asia", "Europa", "América"], "answer": "África"},
+    {"question": "¿Qué animal es conocido como el rey de la selva?", "options": ["León", "Tigre", "Elefante", "Cebra"], "answer": "León"},
+    {"question": "¿Qué instrumento musical tiene cuerdas?", "options": ["Guitarra", "Piano", "Trompeta", "Flauta"], "answer": "Guitarra"},
 ]
 
 # Fuente para texto
@@ -41,9 +43,26 @@ class Player:
         self.name = name
         self.color = color
         self.position = 0
+        self.x, self.y = BOARD_POSITIONS[0]
 
     def move(self, steps):
-        self.position = min(self.position + steps, len(BOARD_POSITIONS) - 1)
+        # Mover al jugador con animación
+        for _ in range(steps):
+            if self.position < len(BOARD_POSITIONS) - 1:
+                self.position += 1
+                target_x, target_y = BOARD_POSITIONS[self.position]
+                while (self.x, self.y) != (target_x, target_y):
+                    if self.x < target_x:
+                        self.x += 5
+                    elif self.x > target_x:
+                        self.x -= 5
+                    if self.y < target_y:
+                        self.y += 5
+                    elif self.y > target_y:
+                        self.y -= 5
+                    draw_board()
+                    pygame.display.update()
+                    pygame.time.delay(50)
 
 # Crear jugadores
 user_player = Player("Usuario", BLUE)
@@ -55,7 +74,7 @@ current_player = 0
 def roll_dice():
     return random.randint(1, 6)
 
-# Pregunta aleatoria
+# Pregunta aleatoria con opciones
 def ask_random_question():
     return random.choice(QUESTIONS)
 
@@ -69,13 +88,12 @@ def draw_board():
 
     # Dibujar jugadores
     for player in players:
-        pos = BOARD_POSITIONS[player.position]
-        pygame.draw.circle(screen, player.color, (pos[0] + 40, pos[1] + 40), 30)
+        pygame.draw.circle(screen, player.color, (player.x + 40, player.y + 40), 30)
 
 # Mostrar texto en la pantalla
 def display_text(text, color=BLACK, y_offset=0):
     text_surface = font.render(text, True, color)
-    screen.blit(text_surface, (20, HEIGHT - 100 + y_offset))
+    screen.blit(text_surface, (20, HEIGHT - 120 + y_offset))
 
 # Bucle principal del juego
 game_over = False
@@ -84,6 +102,8 @@ question_message = ""
 answer_message = ""
 question_active = False
 correct_answer = ""
+options = []
+selected_option = 0
 
 while not game_over:
     for event in pygame.event.get():
@@ -92,53 +112,48 @@ while not game_over:
             sys.exit()
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            if not game_over:
-                if not question_active:  # No permitir tirar el dado si hay una pregunta activa
-                    # El jugador actual lanza el dado
-                    dice_roll = roll_dice()
-                    message = f"{players[current_player].name} tiró un {dice_roll}"
-                    
-                    # Mover al jugador actual
-                    players[current_player].move(dice_roll)
-                    current_position = players[current_player].position
-                    message += f" y se movió a la casilla {current_position + 1}"
+            if not game_over and not question_active:
+                # El jugador actual lanza el dado
+                dice_roll = roll_dice()
+                message = f"{players[current_player].name} tiró un {dice_roll}"
+                
+                # Mover al jugador actual
+                players[current_player].move(dice_roll)
+                current_position = players[current_player].position
+                message += f" y se movió a la casilla {current_position + 1}"
 
-                    # Si cae en una casilla con una pregunta
-                    if current_position in random.sample(range(1, 19), 3):  # Casillas con preguntas aleatorias
-                        question = ask_random_question()
-                        question_message = question["question"]
-                        correct_answer = question["answer"]
-                        question_active = True  # Activar el estado de pregunta
+                # Si cae en una casilla con una pregunta
+                if current_position in random.sample(range(1, 19), 3):  # Casillas con preguntas aleatorias
+                    question = ask_random_question()
+                    question_message = question["question"]
+                    correct_answer = question["answer"]
+                    options = question["options"]
+                    question_active = True  # Activar el estado de pregunta
+                    selected_option = 0  # Reiniciar opción seleccionada
 
-                    # Verificar si el jugador actual ha llegado al final
-                    if current_position == len(BOARD_POSITIONS) - 1:
-                        message = f"{players[current_player].name} ha ganado el juego!"
-                        game_over = True
+                # Verificar si el jugador actual ha llegado al final
+                if current_position == len(BOARD_POSITIONS) - 1:
+                    message = f"{players[current_player].name} ha ganado el juego!"
+                    game_over = True
 
-                    # Cambiar de turno
-                    current_player = (current_player + 1) % 2
+                # Cambiar de turno
+                current_player = (current_player + 1) % 2
 
         if event.type == pygame.KEYDOWN and question_active:
-            # El usuario responde usando teclas (input simulado)
-            if event.key == pygame.K_1:
-                user_answer = "Mercurio"
-            elif event.key == pygame.K_2:
-                user_answer = "7"
-            elif event.key == pygame.K_3:
-                user_answer = "Oxígeno"
-            elif event.key == pygame.K_4:
-                user_answer = "África"
-            else:
-                user_answer = ""
-
-            if user_answer:
-                if user_answer.lower() == correct_answer.lower():
+            # Navegar por las opciones de respuesta con las teclas arriba y abajo
+            if event.key == pygame.K_UP:
+                selected_option = (selected_option - 1) % len(options)
+            elif event.key == pygame.K_DOWN:
+                selected_option = (selected_option + 1) % len(options)
+            elif event.key == pygame.K_RETURN:
+                # El jugador elige la opción
+                if options[selected_option].lower() == correct_answer.lower():
                     answer_message = "¡Respuesta correcta!"
                 else:
                     answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
                 question_active = False  # La pregunta ha sido contestada
 
-    # Dibujar tablero, jugadores y actualizar pantalla
+    # Dibujar tablero y actualizar pantalla
     draw_board()
     
     # Mostrar el mensaje del dado y movimiento
@@ -148,7 +163,9 @@ while not game_over:
     # Mostrar la pregunta, si hay una activa
     if question_active:
         display_text("Pregunta: " + question_message, GREEN, 30)
-        display_text("Responde con las teclas 1, 2, 3, 4", GREEN, 60)
+        for i, option in enumerate(options):
+            color = GREEN if i == selected_option else BLACK
+            display_text(f"{i+1}. {option}", color, 60 + i * 30)
 
     # Mostrar la respuesta si ha sido respondida
     if answer_message:
