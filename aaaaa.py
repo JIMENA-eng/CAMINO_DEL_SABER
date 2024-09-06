@@ -131,6 +131,10 @@ def show_question_screen(question, options, selected_option, remaining_time):
     timer_text = font.render(f"Tiempo restante: {remaining_time}s", True, RED)
     screen.blit(timer_text, (20, HEIGHT - 50))
 
+# El bot elige una opción al azar
+def bot_choose_option(options):
+    return random.randint(0, len(options) - 1)
+
 # Bucle principal del juego
 game_over = False
 message = ""
@@ -151,65 +155,98 @@ while not game_over:
             pygame.quit()
             sys.exit()
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            if not game_over and not question_active:
-                # El jugador actual lanza el dado
-                dice_roll = roll_dice()
-                message = f"{players[current_player].name} tiró un {dice_roll}"
-                
-                # Mover al jugador actual
-                players[current_player].move(dice_roll)
-                current_position = players[current_player].position
-                message += f" y se movió a la casilla {current_position + 1}"
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not question_active:
+                if current_player == 0:  # Solo el jugador puede lanzar el dado
+                    # El jugador actual lanza el dado
+                    dice_roll = roll_dice()
+                    message = f"{players[current_player].name} tiró un {dice_roll}"
+                    
+                    # Mover al jugador actual
+                    players[current_player].move(dice_roll)
+                    current_position = players[current_player].position
+                    message += f" y se movió a la casilla {current_position + 1}"
 
-                # Si cae en una casilla con una pregunta
-                if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
-                    question = ask_random_question()
-                    question_message = question["question"]
-                    correct_answer = question["answer"]
-                    options = question["options"]
-                    question_active = True  # Activar el estado de pregunta
-                    selected_option = 0  # Reiniciar opción seleccionada
-                    start_time = time.time()  # Iniciar temporizador
+                    # Si cae en una casilla con una pregunta
+                    if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
+                        question = ask_random_question()
+                        question_message = question["question"]
+                        correct_answer = question["answer"]
+                        options = question["options"]
+                        question_active = True  # Activar el estado de pregunta
+                        selected_option = 0  # Reiniciar opción seleccionada
+                        start_time = time.time()  # Iniciar temporizador
 
-                # Verificar si el jugador actual ha llegado al final
-                if current_position == len(BOARD_POSITIONS) - 1:
-                    message = f"{players[current_player].name} ha ganado el juego!"
-                    game_over = True
+                    # Verificar si el jugador actual ha llegado al final
+                    if current_position == len(BOARD_POSITIONS) - 1:
+                        message = f"{players[current_player].name} ha ganado el juego!"
+                        game_over = True
 
-                # Cambiar de turno
-                current_player = (current_player + 1) % 2
+                    # Cambiar de turno
+                    current_player = (current_player + 1) % 2
 
-        if event.type == pygame.KEYDOWN and question_active:
-            # Navegar por las opciones de respuesta con las teclas arriba y abajo
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_UP and question_active and current_player == 0:
                 selected_option = (selected_option - 1) % len(options)
-            elif event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_DOWN and question_active and current_player == 0:
                 selected_option = (selected_option + 1) % len(options)
-            elif event.key == pygame.K_RETURN:
+            elif event.key == pygame.K_RETURN and question_active and current_player == 0:
                 # El jugador elige la opción
                 if options[selected_option].lower() == correct_answer.lower():
                     answer_message = "¡Respuesta correcta!"
                     players[current_player].correct_answers += 1
                 else:
                     answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
-                question_active = False  # Terminar el estado de pregunta
+                question_active = False  # La pregunta ha sido contestada
 
-    # Lógica de temporizador de preguntas
+    if not question_active and not game_over and current_player == 1:
+        # El bot juega automáticamente
+        dice_roll = roll_dice()
+        message = f"{players[current_player].name} tiró un {dice_roll}"
+        
+        # Mover al bot
+        players[current_player].move(dice_roll)
+        current_position = players[current_player].position
+        message += f" y se movió a la casilla {current_position + 1}"
+
+        # Si cae en una casilla con una pregunta
+        if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
+            question = ask_random_question()
+            question_message = question["question"]
+            correct_answer = question["answer"]
+            options = question["options"]
+            selected_option = bot_choose_option(options)  # El bot elige una opción
+            question_active = True  # Activar el estado de pregunta
+            start_time = time.time()  # Iniciar temporizador
+
+        # Verificar si el bot ha llegado al final
+        if current_position == len(BOARD_POSITIONS) - 1:
+            message = f"{players[current_player].name} ha ganado el juego!"
+            game_over = True
+
+        # Cambiar de turno
+        current_player = (current_player + 1) % 2
+
+    # Actualizar el temporizador
     if question_active:
         remaining_time = countdown_timer(start_time)
-        if remaining_time == 0:
-            answer_message = f"Tiempo agotado. La respuesta era: {correct_answer}"
+        if remaining_time == 0:  # Se acabó el tiempo
+            answer_message = f"Se acabó el tiempo. La respuesta correcta era: {correct_answer}"
             question_active = False
 
-    # Actualizar pantalla
-    draw_board()
-    if question_active:
+        # Mostrar la pantalla de preguntas
         show_question_screen(question_message, options, selected_option, remaining_time)
-    if message:
-        display_text(message, BLACK, y_offset=0)
-    if answer_message:
-        display_text(answer_message, RED, y_offset=50)
+
+    # Dibujar tablero y actualizar pantalla
+    else:
+        draw_board()
+
+        # Mostrar el mensaje del dado y movimiento
+        if message:
+            display_text(message, BLACK, 0)
+
+        # Mostrar la respuesta si ha sido respondida
+        if answer_message:
+            display_text(answer_message, RED, 50)
 
     pygame.display.update()
     clock.tick(30)  # Limitar a 30 fotogramas por segundo
