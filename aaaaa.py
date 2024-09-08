@@ -107,6 +107,12 @@ def draw_board():
         text_surface = small_font.render(f"{player.name}: {player.correct_answers}", True, BLACK)
         screen.blit(text_surface, (20, 20 + players.index(player) * 30))
 
+    # Dibujar el área del dado
+    pygame.draw.rect(screen, BLACK, pygame.Rect(WIDTH - 120, HEIGHT - 120, 100, 100), 2)
+    pygame.draw.rect(screen, WHITE, pygame.Rect(WIDTH - 118, HEIGHT - 118, 96, 96))  # Dado blanco
+    dice_value_surface = font.render(str(dice_roll), True, BLACK)
+    screen.blit(dice_value_surface, (WIDTH - 100, HEIGHT - 100))
+
 # Mostrar texto en la pantalla
 def display_text(text, color=BLACK, y_offset=0):
     text_surface = font.render(text, True, color)
@@ -146,6 +152,7 @@ correct_answer = ""
 options = []
 selected_option = 0
 start_time = 0
+dice_roll = 1  # Valor inicial del dado
 
 # Crear reloj para controlar el frame rate
 clock = pygame.time.Clock()
@@ -156,54 +163,54 @@ while not game_over:
             pygame.quit()
             sys.exit()
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                if not game_over and not question_active:
-                    # El jugador actual lanza el dado
-                    dice_roll = roll_dice()
-                    message = f"{players[current_player].name} tiró un {dice_roll}"
-                    
-                    # Mover al jugador actual
-                    players[current_player].move(dice_roll)
-                    current_position = players[current_player].position
-                    message += f" y se movió a la casilla {current_position + 1}"
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Verificar si se hace clic en el área del dado
+            mouse_x, mouse_y = event.pos
+            if WIDTH - 120 < mouse_x < WIDTH - 20 and HEIGHT - 120 < mouse_y < HEIGHT - 20:
+                dice_roll = roll_dice()
+                message = f"{players[current_player].name} tiró un {dice_roll}"
+                
+                # Mover al jugador actual
+                players[current_player].move(dice_roll)
+                current_position = players[current_player].position
+                message += f" y se movió a la casilla {current_position + 1}"
 
-                    # Si cae en una casilla con una pregunta
-                    if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
-                        question = ask_random_question()
-                        question_message = question["question"]
-                        correct_answer = question["answer"]
-                        options = question["options"]
-                        question_active = True  # Activar el estado de pregunta
-                        selected_option = 0  # Reiniciar opción seleccionada
-                        start_time = time.time()  # Iniciar temporizador
+                # Si cae en una casilla con una pregunta
+                if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
+                    question = ask_random_question()
+                    question_message = question["question"]
+                    correct_answer = question["answer"]
+                    options = question["options"]
+                    question_active = True  # Activar el estado de pregunta
+                    selected_option = 0  # Reiniciar opción seleccionada
+                    start_time = time.time()  # Iniciar temporizador
 
-                    # Verificar si el jugador actual ha llegado al final
-                    if current_position == len(BOARD_POSITIONS) - 1:
-                        message = f"{players[current_player].name} ha ganado el juego!"
-                        game_over = True
-                        break
+                # Verificar si el jugador actual ha llegado al final
+                if current_position == len(BOARD_POSITIONS) - 1:
+                    message = f"{players[current_player].name} ha ganado el juego!"
+                    game_over = True
+                    break
 
-                    # Cambiar de turno al bot
-                    current_player = (current_player + 1) % 2
+                # Cambiar de turno al bot
+                current_player = (current_player + 1) % 2
 
-            if event.type == pygame.KEYDOWN and question_active:
-                # Navegar por las opciones de respuesta con las teclas arriba y abajo
-                if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % len(options)
-                elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options)
-                elif event.key == pygame.K_RETURN:
-                    # El jugador elige la opción
-                    if options[selected_option].lower() == correct_answer.lower():
-                        answer_message = "¡Respuesta correcta!"
-                        if current_player == 0:  # Usuario
-                            bot_player.correct_answers += 1  # Incrementar el contador del bot
-                        else:  # Bot
-                            user_player.correct_answers += 1  # Incrementar el contador del usuario
-                    else:
-                        answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
-                    question_active = False  # Terminar el estado de pregunta
+        if event.type == pygame.KEYDOWN and question_active:
+            # Navegar por las opciones de respuesta con las teclas arriba y abajo
+            if event.key == pygame.K_UP:
+                selected_option = (selected_option - 1) % len(options)
+            elif event.key == pygame.K_DOWN:
+                selected_option = (selected_option + 1) % len(options)
+            elif event.key == pygame.K_RETURN:
+                # El jugador elige la opción
+                if options[selected_option].lower() == correct_answer.lower():
+                    answer_message = "¡Respuesta correcta!"
+                    if current_player == 0:  # Usuario
+                        bot_player.correct_answers += 1  # Incrementar el contador del bot
+                    else:  # Bot
+                        user_player.correct_answers += 1  # Incrementar el contador del usuario
+                else:
+                    answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
+                question_active = False  # Terminar el estado de pregunta
 
     # Lógica de temporizador de preguntas
     if question_active:
