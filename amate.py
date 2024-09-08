@@ -1,108 +1,81 @@
-import tkinter as tk
-from tkinter import messagebox
+import pygame
+import sys
 import random
 
-# Clase de propiedad
-class Propiedad:
-    def __init__(self, nombre, precio, alquiler):
-        self.nombre = nombre
-        self.precio = precio
-        self.alquiler = alquiler
-        self.propietario = None
+# Inicializar Pygame
+pygame.init()
 
-    def comprar(self, jugador):
-        if jugador.dinero >= self.precio:
-            jugador.dinero -= self.precio
-            self.propietario = jugador
-            jugador.propiedades.append(self)
-            messagebox.showinfo("Compra", f"{jugador.nombre} compró {self.nombre} por {self.precio}.")
-        else:
-            messagebox.showwarning("Error", f"{jugador.nombre} no tiene suficiente dinero para comprar {self.nombre}.")
+# Configuración de la pantalla
+WIDTH, HEIGHT = 400, 400
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dado con Pygame")
 
-    def cobrar_alquiler(self, jugador):
-        if self.propietario and self.propietario != jugador:
-            jugador.dinero -= self.alquiler
-            self.propietario.dinero += self.alquiler
-            messagebox.showinfo("Alquiler", f"{jugador.nombre} pagó {self.alquiler} de alquiler a {self.propietario.nombre} por {self.nombre}.")
-        elif self.propietario == jugador:
-            messagebox.showinfo("Propietario", f"{jugador.nombre} ya es el propietario de {self.nombre}.")
+# Colores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-# Clase de jugador
-class Jugador:
-    def __init__(self, nombre, label):
-        self.nombre = nombre
-        self.dinero = 1500
-        self.posicion = 0
-        self.propiedades = []
-        self.label = label  # Etiqueta gráfica para mostrar la información del jugador
+# Tamaño del dado
+DICE_SIZE = 100
+DICE_CENTER = (WIDTH // 2, HEIGHT // 2)
 
-    def actualizar_label(self):
-        self.label.config(text=f"{self.nombre}: ${self.dinero}")
+# Crear superficie para el dado
+dice_surface = pygame.Surface((DICE_SIZE, DICE_SIZE))
+dice_surface.fill(WHITE)
 
-    def mover(self, pasos, tablero):
-        self.posicion = (self.posicion + pasos) % len(tablero)
-        casilla_actual = tablero[self.posicion]
-        messagebox.showinfo("Movimiento", f"{self.nombre} aterrizó en {casilla_actual.nombre}.")
+# Dibujar el dado
+def draw_dice_face(face_number):
+    # Limpiar la superficie
+    dice_surface.fill(WHITE)
+    
+    # Dibujar los puntos del dado según el número de la cara
+    dot_radius = 10
+    dot_offset = DICE_SIZE // 4
 
-        if casilla_actual.propietario is None:
-            casilla_actual.comprar(self)
-        else:
-            casilla_actual.cobrar_alquiler(self)
+    if face_number == 1:
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE // 2, DICE_SIZE // 2), dot_radius)
+    elif face_number == 2:
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE - dot_offset), dot_radius)
+    elif face_number == 3:
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE // 2, DICE_SIZE // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE - dot_offset), dot_radius)
+    elif face_number == 4:
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, DICE_SIZE - dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE - dot_offset), dot_radius)
+    elif face_number == 5:
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE // 2, DICE_SIZE // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, DICE_SIZE - dot_offset), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE - dot_offset), dot_radius)
+    elif face_number == 6:
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, dot_offset + dot_offset // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, dot_offset + dot_offset // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, DICE_SIZE // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (dot_offset, DICE_SIZE - dot_offset - dot_offset // 2), dot_radius)
+        pygame.draw.circle(dice_surface, BLACK, (DICE_SIZE - dot_offset, DICE_SIZE - dot_offset - dot_offset // 2), dot_radius)
 
-        self.actualizar_label()
+# Bucle principal del juego
+clock = pygame.time.Clock()
+face_number = random.randint(1, 6)  # Número inicial del dado
 
-# Función para lanzar el dado
-def lanzar_dado():
-    return random.randint(1, 6)
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                face_number = random.randint(1, 6)  # Lanzar el dado al presionar la barra espaciadora
+                draw_dice_face(face_number)
 
-# Función para manejar los turnos
-def turno_jugador(jugador, tablero, boton):
-    dado = lanzar_dado()
-    messagebox.showinfo("Dado", f"{jugador.nombre} lanzó un {dado}.")
-    jugador.mover(dado, tablero)
-
-    # Revisar si algún jugador se queda sin dinero
-    if jugador.dinero <= 0:
-        messagebox.showinfo("Fin del juego", f"{jugador.nombre} se ha quedado sin dinero. Fin del juego.")
-        boton.config(state="disabled")
-
-# Función principal del juego
-def jugar_monopolio():
-    # Crear ventana
-    ventana = tk.Tk()
-    ventana.title("Juego de Monopoly")
-
-    # Crear el tablero
-    tablero = [
-        Propiedad("Salida", 0, 0),
-        Propiedad("Mediterranean Avenue", 60, 2),
-        Propiedad("Baltic Avenue", 60, 4),
-        Propiedad("Oriental Avenue", 100, 6),
-        Propiedad("Vermont Avenue", 100, 6),
-        Propiedad("Connecticut Avenue", 120, 8)
-    ]
-
-    # Crear jugadores con etiquetas gráficas
-    etiqueta_jugador1 = tk.Label(ventana, text="Jugador 1: $1500")
-    etiqueta_jugador1.pack()
-    jugador1 = Jugador("Jugador 1", etiqueta_jugador1)
-
-    etiqueta_jugador2 = tk.Label(ventana, text="Jugador 2: $1500")
-    etiqueta_jugador2.pack()
-    jugador2 = Jugador("Jugador 2", etiqueta_jugador2)
-
-    jugadores = [jugador1, jugador2]
-
-    # Botón para turno del Jugador 1
-    boton_jugador1 = tk.Button(ventana, text="Turno Jugador 1", command=lambda: turno_jugador(jugador1, tablero, boton_jugador1))
-    boton_jugador1.pack()
-
-    # Botón para turno del Jugador 2
-    boton_jugador2 = tk.Button(ventana, text="Turno Jugador 2", command=lambda: turno_jugador(jugador2, tablero, boton_jugador2))
-    boton_jugador2.pack()
-
-    # Ejecutar la ventana
-    ventana.mainloop()
-
-# Iniciar el juego
-jugar_monopolio()
+    # Actualizar pantalla
+    screen.fill(WHITE)
+    screen.blit(dice_surface, (DICE_CENTER[0] - DICE_SIZE // 2, DICE_CENTER[1] - DICE_SIZE // 2))
+    
+    pygame.display.flip()
+    clock.tick(30)  # Limitar a 30 fotogramas por segundo
