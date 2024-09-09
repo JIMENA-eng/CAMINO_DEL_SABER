@@ -150,6 +150,14 @@ def show_question_screen(question, options, selected_option, remaining_time):
 def generate_code():
     return ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))
 
+# Pantalla de bienvenida
+def show_welcome_screen():
+    screen.fill(WHITE)
+    welcome_text = font.render("Caminos del Saber", True, BLACK)
+    screen.blit(welcome_text, (WIDTH // 2 - welcome_text.get_width() // 2, HEIGHT // 2 - welcome_text.get_height() // 2))
+    pygame.display.update()
+    pygame.time.delay(2000)  # Mostrar la pantalla de bienvenida durante 2 segundos
+
 # Pantalla de inicio
 def show_start_screen():
     screen.fill(WHITE)
@@ -170,15 +178,15 @@ def show_start_screen():
     
     return solitary_button, invite_button
 
-# Mostrar pantalla de invitación
+# Pantalla de invitación y código
 def show_invite_screen(code):
     screen.fill(WHITE)
     
-    # Mostrar código de invitación
+    # Mostrar código
     code_text = font.render(f"Código de invitación: {code}", True, BLACK)
-    screen.blit(code_text, (20, HEIGHT // 2 - 100))
+    screen.blit(code_text, (WIDTH // 2 - code_text.get_width() // 2, HEIGHT // 2 - 100))
     
-    # Campo para introducir código
+    # Caja de texto para introducir código
     input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 30, 200, 40)
     pygame.draw.rect(screen, BLACK, input_box, 2)
     input_text = ""
@@ -337,6 +345,8 @@ def invite_screen():
 
 # Pantalla principal
 def main():
+    show_welcome_screen()  # Mostrar pantalla de bienvenida
+    
     while True:
         solitary_button, invite_button = show_start_screen()
 
