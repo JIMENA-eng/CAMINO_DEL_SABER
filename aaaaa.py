@@ -203,6 +203,41 @@ def show_invite_screen(code):
 
     return input_box, play_button
 
+# Pantalla de niveles
+def show_levels_screen():
+    screen.fill(WHITE)
+    
+    # Título de la pantalla de niveles
+    title_text = font.render("Selecciona un nivel", True, BLACK)
+    screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 20))
+    
+    # Botones para los 20 niveles
+    button_width, button_height = 150, 40
+    margin = 10
+    levels_per_row = 4
+    for i in range(20):
+        row = i // levels_per_row
+        col = i % levels_per_row
+        level_button = pygame.Rect(
+            (WIDTH - levels_per_row * (button_width + margin) + col * (button_width + margin) + margin),
+            100 + row * (button_height + margin),
+            button_width,
+            button_height
+        )
+        pygame.draw.rect(screen, BLUE, level_button)
+        level_text = font.render(f"Nivel {i + 1}", True, WHITE)
+        screen.blit(level_text, (level_button.x + (button_width - level_text.get_width()) // 2,
+                                  level_button.y + (button_height - level_text.get_height()) // 2))
+    
+    pygame.display.update()
+    
+    return [pygame.Rect(
+        (WIDTH - levels_per_row * (button_width + margin) + i % levels_per_row * (button_width + margin) + margin),
+        100 + i // levels_per_row * (button_height + margin),
+        button_width,
+        button_height
+    ) for i in range(20)]
+
 # Bucle principal del juego
 def main_game():
     global current_player, question_active, correct_answer, options, selected_option, start_time, dice_roll
@@ -315,6 +350,23 @@ def main_game():
 
         pygame.display.update()
         clock.tick(30)  # Limitar a 30 fotogramas por segundo
+    
+    # Mostrar pantalla de niveles después de terminar el juego
+    levels_buttons = show_levels_screen()
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                for i, button in enumerate(levels_buttons):
+                    if button.collidepoint(mouse_x, mouse_y):
+                        # Aquí puedes manejar la lógica para iniciar el nivel seleccionado
+                        print(f"Nivel {i + 1} seleccionado")
+                        return
 
 # Pantalla de invitación y código
 def invite_screen():
@@ -359,10 +411,10 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     if solitary_button.collidepoint(mouse_x, mouse_y):
-                        main_game()
+                        main_game()  # Iniciar juego en solitario
                         return
-                    elif invite_button.collidepoint(mouse_x, mouse_y):
-                        invite_screen()  # Mostrar pantalla de invitación
+                    if invite_button.collidepoint(mouse_x, mouse_y):
+                        invite_screen()  # Ir a pantalla de invitación
 
 if __name__ == "__main__":
     main()
