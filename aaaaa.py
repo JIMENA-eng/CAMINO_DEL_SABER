@@ -173,9 +173,27 @@ def show_start_screen():
 # Mostrar pantalla de invitación
 def show_invite_screen(code):
     screen.fill(WHITE)
-    invite_message = font.render(f"Comparte este código para invitar a otros jugadores: {code}", True, BLACK)
-    screen.blit(invite_message, (20, HEIGHT // 2 - invite_message.get_height() // 2))
+    
+    # Mostrar código de invitación
+    code_text = font.render(f"Código de invitación: {code}", True, BLACK)
+    screen.blit(code_text, (20, HEIGHT // 2 - 100))
+    
+    # Campo para introducir código
+    input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 30, 200, 40)
+    pygame.draw.rect(screen, BLACK, input_box, 2)
+    input_text = ""
+    input_surface = font.render(input_text, True, BLACK)
+    screen.blit(input_surface, (input_box.x + 5, input_box.y + 5))
+    
+    # Botón "Jugar"
+    play_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 40, 200, 50)
+    pygame.draw.rect(screen, BLUE, play_button)
+    play_text = font.render("Jugar", True, WHITE)
+    screen.blit(play_text, (WIDTH // 2 - play_text.get_width() // 2, HEIGHT // 2 + 40 + play_text.get_height() // 2))
+    
     pygame.display.update()
+
+    return input_box, play_button
 
 # Bucle principal del juego
 def main_game():
@@ -290,6 +308,33 @@ def main_game():
         pygame.display.update()
         clock.tick(30)  # Limitar a 30 fotogramas por segundo
 
+# Pantalla de invitación y código
+def invite_screen():
+    global current_player, question_active, correct_answer, options, selected_option, start_time, dice_roll
+    
+    code = generate_code()
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                if play_button.collidepoint(mouse_x, mouse_y):
+                    main_game()  # Redirigir al juego
+                    return
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # Aquí puedes manejar la lógica para verificar el código ingresado
+                    pass
+
+        input_box, play_button = show_invite_screen(code)
+
+        pygame.display.update()
+
 # Pantalla principal
 def main():
     while True:
@@ -307,10 +352,7 @@ def main():
                         main_game()
                         return
                     elif invite_button.collidepoint(mouse_x, mouse_y):
-                        code = generate_code()
-                        show_invite_screen(code)
-                        time.sleep(5)  # Mostrar el código por 5 segundos
-                        break
+                        invite_screen()  # Mostrar pantalla de invitación
 
 if __name__ == "__main__":
     main()
