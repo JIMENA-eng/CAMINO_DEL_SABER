@@ -18,10 +18,10 @@ BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-# Definir el tamaño de las casillas para que ocupen la mitad de la pantalla
+# Definir el tamaño de las casillas
 BOX_SIZE = WIDTH // 16  # Ajusta el tamaño de las casillas a 1/16 del ancho de la pantalla
 
-# Definir posiciones de las casillas en forma de "gusano" con tamaño ajustado
+# Definir posiciones de las casillas en forma de "gusano"
 BOARD_POSITIONS = []
 x, y = 50, 50
 for _ in range(8):  # Número de filas
@@ -171,6 +171,7 @@ def show_welcome_screen():
     screen.blit(welcome_image, (0, 0))
     pygame.display.update()
     pygame.time.wait(2000)  # Esperar 2 segundos
+
 
 # Pantalla de inicio (selección de modo de juego)
 def show_start_screen():
