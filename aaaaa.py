@@ -19,27 +19,17 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 # Definir el tamaño de las casillas
-NUM_BOXES = 25
-BOX_SIZE = min(WIDTH // 5, HEIGHT // 5)  # Ajusta el tamaño de las casillas a 1/5 del ancho o alto de la pantalla
+BOX_SIZE = WIDTH // 16  # Ajusta el tamaño de las casillas a 1/16 del ancho de la pantalla
 
 # Definir posiciones de las casillas en forma de "gusano"
 BOARD_POSITIONS = []
 x, y = 50, 50
-direction = 1  # 1 para derecha, -1 para izquierda
-for i in range(NUM_BOXES):
-    BOARD_POSITIONS.append((x, y))
-    if direction == 1:
+for _ in range(8):  # Número de filas
+    for _ in range(16):  # Número de columnas
+        BOARD_POSITIONS.append((x, y))
         x += BOX_SIZE
-        if len(BOARD_POSITIONS) % 5 == 0:  # Cambio de fila
-            y += BOX_SIZE
-            direction = -1
-    else:
-        x -= BOX_SIZE
-        if len(BOARD_POSITIONS) % 5 == 0:  # Cambio de fila
-            y += BOX_SIZE
-            direction = 1
-    if len(BOARD_POSITIONS) % 5 == 0:
-        x = 50 if direction == 1 else WIDTH - 50 - BOX_SIZE
+    x = 50
+    y += BOX_SIZE
 
 # Definir preguntas aleatorias
 QUESTIONS = [
@@ -66,11 +56,10 @@ class Player:
         self.color = color
         self.position = 0
         self.x, self.y = BOARD_POSITIONS[0]
-        self.correct_answers = 0  # Contador de respuestas correctas
-        self.piece_image = piece_image  # Imagen de la ficha
+        self.correct_answers = 0
+        self.piece_image = piece_image
 
     def move(self, steps):
-        # Mover al jugador con animación
         for _ in range(steps):
             if self.position < len(BOARD_POSITIONS) - 1:
                 self.position += 1
@@ -89,9 +78,33 @@ class Player:
                     pygame.time.delay(50)
 
     def auto_answer(self, question):
-        # El bot responde automáticamente seleccionando una opción al azar
         selected_option = random.choice(question["options"])
         return selected_option
+    
+    def answer_question(self, question):
+        # Mostrar la pregunta y opciones y esperar la respuesta
+        start_time = time.time()
+        selected_option = None
+        while selected_option is None:
+            remaining_time = countdown_timer(start_time)
+            show_question_screen(question["question"], question["options"], selected_option, remaining_time)
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4]:
+                        selected_option = question["options"][event.key - pygame.K_1]
+                        break
+                if remaining_time <= 0:
+                    selected_option = question["options"][random.randint(0, len(question["options"]) - 1)]
+                    break
+        if selected_option == question["answer"]:
+            self.correct_answers += 1
+            return True
+        return False
+
 
 # Crear jugadores
 bot_piece_image = pygame.image.load('camino del saber/ficha6.png')  # Imagen de la ficha del bot
@@ -180,80 +193,183 @@ def show_welcome_screen():
     welcome_image = pygame.transform.scale(welcome_image, (WIDTH, HEIGHT))
     screen.blit(welcome_image, (0, 0))
     pygame.display.update()
-    pygame.time.wait(3000)  # Esperar 3 segundos
+    pygame.time.wait(2000)  # Esperar 2 segundos
 
-# Pantalla de inicio
+
+# Pantalla de inicio (selección de modo de juego)
 def show_start_screen():
     screen.fill(WHITE)
-    # Cargar las imágenes
-    solitary_image = pygame.image.load('camino del saber/solitario.png')  # Asegúrate de usar la ruta correcta
-    invite_image = pygame.image.load('camino del saber/invitar.png')  # Asegúrate de usar la ruta correcta
+    # Cargar imágenes para botones
+    solitary_image = pygame.image.load('camino del saber/solitario.png')
+    invite_image = pygame.image.load('camino del saber/invitar.png')
     
-    # Redimensionar las imágenes
     button_width, button_height = 300, 100
+    solitary_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 - 60, button_width, button_height)
+    invite_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 + 60, button_width, button_height)
+    
     solitary_image = pygame.transform.scale(solitary_image, (button_width, button_height))
     invite_image = pygame.transform.scale(invite_image, (button_width, button_height))
     
-    screen.blit(solitary_image, (WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 - 50))
-    screen.blit(invite_image, (WIDTH // 2 - button_width // 2, HEIGHT // 2 + 50))
-    
+    screen.blit(solitary_image, solitary_rect.topleft)
+    screen.blit(invite_image, invite_rect.topleft)
+
     pygame.display.update()
 
-# Función principal del juego
-def main():
-    global current_player, dice_roll
-    show_welcome_screen()
-    show_start_screen()
-    
-    clock = pygame.time.Clock()
-    running = True
-    game_started = False
-    waiting_for_question = False
-    question = None
-    selected_option = None
-    question_start_time = None
-
-    while running:
+    # Esperar la selección
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    if not game_started:
-                        game_started = True
-                    else:
-                        if waiting_for_question:
-                            if selected_option is not None:
-                                correct_answer = question["answer"]
-                                if question["options"][selected_option] == correct_answer:
-                                    players[current_player].correct_answers += 1
-                                waiting_for_question = False
-                                current_player = (current_player + 1) % len(players)
-                                roll_dice()
-                        else:
-                            if dice_roll > 0:
-                                players[current_player].move(dice_roll)
-                                dice_roll = 0
-                                waiting_for_question = True
-                                question = ask_random_question()
-                                selected_option = None
-                                question_start_time = time.time()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if solitary_rect.collidepoint(event.pos):
+                    return "solitario"
+                if invite_rect.collidepoint(event.pos):
+                    return "invitar"
 
-        if waiting_for_question and question_start_time:
-            remaining_time = countdown_timer(question_start_time)
-            if remaining_time == 0:
-                waiting_for_question = False
-                current_player = (current_player + 1) % len(players)
-                roll_dice()
-            else:
-                show_question_screen(question["question"], question["options"], selected_option, remaining_time)
-                pygame.display.update()
-        else:
-            draw_board()
-            pygame.display.update()
-        
-        clock.tick(30)
+# Pantalla de selección de ficha
+def show_piece_selection_screen():
+    screen.fill(WHITE)
+
+    # Cargar las imágenes de las fichas
+    piece_images = [
+        pygame.image.load('camino del saber/ficha1.png'),
+        pygame.image.load('camino del saber/ficha2.png'),
+        pygame.image.load('camino del saber/ficha3.png'),
+        pygame.image.load('camino del saber/ficha4.png')
+    ]
+
+    # Redimensionar las imágenes de las fichas
+    piece_size = 100
+    for i in range(len(piece_images)):
+        piece_images[i] = pygame.transform.scale(piece_images[i], (piece_size, piece_size))
+
+    # Mostrar imágenes de las fichas
+    piece_rects = []
+    for i, image in enumerate(piece_images):
+        x = WIDTH // 2 - (piece_size * 2) + (i % 2) * (piece_size + 20)
+        y = HEIGHT // 2 - (piece_size // 2) + (i // 2) * (piece_size + 20)
+        rect = pygame.Rect(x, y, piece_size, piece_size)
+        piece_rects.append(rect)
+        screen.blit(image, rect.topleft)
+
+    # Mostrar instrucciones
+    instruction_text = font.render("Selecciona tu ficha", True, BLACK)
+    screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT // 2 - piece_size - 30))
+
+    pygame.display.update()
+
+    # Esperar la selección
+    selected_piece = None
+    while selected_piece is None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, rect in enumerate(piece_rects):
+                    if rect.collidepoint(event.pos):
+                        selected_piece = piece_images[i]
+                        break
+
+    return selected_piece
+
+# Pantalla de ingreso del nombre y selección de ficha
+def show_name_and_piece_screen():
+    screen.fill(WHITE)
+    name_input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 40)
+    name_color = pygame.Color('lightskyblue3')
+    input_box_color = pygame.Color('black')
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    font = pygame.font.Font(None, 32)
+    text = ''
+    active = False
+    piece_image = None
+
+    # Mostrar instrucciones
+    instruction_text = font.render("Ingresa tu nombre y selecciona tu ficha", True, BLACK)
+    screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT // 2 - 100))
+
+    # Mostrar el cuadro de texto para el nombre
+    pygame.draw.rect(screen, input_box_color, name_input_box, 2)
+    txt_surface = font.render(text, True, name_color)
+    screen.blit(txt_surface, (name_input_box.x + 5, name_input_box.y + 5))
+    pygame.draw.rect(screen, input_box_color, name_input_box, 2)
+
+    pygame.display.update()
+
+    # Manejar eventos
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        if text:  # Verificar que el nombre no esté vacío
+                            piece_image = show_piece_selection_screen()
+                            return text, piece_image
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if name_input_box.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+
+        # Mostrar el cuadro de texto actualizado
+        screen.fill(WHITE)
+        pygame.draw.rect(screen, input_box_color, name_input_box, 2)
+        txt_surface = font.render(text, True, name_color)
+        screen.blit(txt_surface, (name_input_box.x + 5, name_input_box.y + 5))
+        pygame.draw.rect(screen, input_box_color, name_input_box, 2)
+        pygame.display.update()
+
+# Función principal del juego
+def main():
+    show_welcome_screen()
+    game_mode = show_start_screen()
+
+    if game_mode == "invitar":
+        # Aquí puedes agregar la lógica para el modo de invitación
+        pass
+
+    user_name, user_piece_image = show_name_and_piece_screen()
+    user_player = Player(user_name, RED, user_piece_image)
+    players.append(user_player)
+
+    global current_player
+    while True:
+        current_player_obj = players[current_player]
+
+        # Tirar el dado y mover el jugador
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    roll_dice()
+                    current_player_obj.move(dice_roll)
+                    draw_board()
+
+                    # Preguntar al jugador si cae en una casilla con pregunta
+                    question = ask_random_question()
+                    if current_player_obj.answer_question(question):
+                        current_player_obj.correct_answers += 1
+                        display_text(f"{current_player_obj.name} ha respondido correctamente!", GREEN)
+                    else:
+                        display_text(f"{current_player_obj.name} ha respondido incorrectamente.", RED)
+                    
+                    # Pasar al siguiente jugador
+                    current_player = (current_player + 1) % len(players)
+                    draw_board()
+                    pygame.display.update()
+
 
 if __name__ == "__main__":
     main()
