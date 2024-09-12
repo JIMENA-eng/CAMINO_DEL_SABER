@@ -18,12 +18,18 @@ BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-# Definir posiciones de las casillas en forma de "gusano"
-BOARD_POSITIONS = [
-    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50), (550, 50), (650, 50), (750, 50),
-    (750, 150), (650, 150), (550, 150), (450, 150), (350, 150), (250, 150), (150, 150), (50, 150),
-    (50, 250), (150, 250), (250, 250), (350, 250)
-]
+# Definir el tamaño de las casillas para que ocupen la mitad de la pantalla
+BOX_SIZE = WIDTH // 16  # Ajusta el tamaño de las casillas a 1/16 del ancho de la pantalla
+
+# Definir posiciones de las casillas en forma de "gusano" con tamaño ajustado
+BOARD_POSITIONS = []
+x, y = 50, 50
+for _ in range(8):  # Número de filas
+    for _ in range(16):  # Número de columnas
+        BOARD_POSITIONS.append((x, y))
+        x += BOX_SIZE
+    x = 50
+    y += BOX_SIZE
 
 # Definir preguntas aleatorias
 QUESTIONS = [
@@ -102,7 +108,7 @@ def draw_board():
     screen.fill(WHITE)
 
     # Ajustar el tamaño de las casillas
-    box_size = 80
+    box_size = BOX_SIZE
 
     # Dibujar casillas
     for pos in BOARD_POSITIONS:
@@ -118,11 +124,13 @@ def draw_board():
         screen.blit(text_surface, (20, 20 + players.index(player) * 30))
 
     # Dibujar el área del dado
-    dice_area_size = 100
-    pygame.draw.rect(screen, BLACK, pygame.Rect(WIDTH - dice_area_size - 20, HEIGHT - dice_area_size - 20, dice_area_size, dice_area_size), 2)
-    pygame.draw.rect(screen, WHITE, pygame.Rect(WIDTH - dice_area_size + 2, HEIGHT - dice_area_size + 2, dice_area_size - 4, dice_area_size - 4))  # Dado blanco
+    dice_area_size = 150
+    dice_area_rect = pygame.Rect(WIDTH - dice_area_size - 20, HEIGHT - dice_area_size - 20, dice_area_size, dice_area_size)
+    pygame.draw.rect(screen, BLACK, dice_area_rect, 2)
+    pygame.draw.rect(screen, WHITE, dice_area_rect.inflate(-4, -4))  # Dado blanco
     dice_value_surface = font.render(str(dice_roll), True, BLACK)
-    screen.blit(dice_value_surface, (WIDTH - dice_area_size + 30, HEIGHT - dice_area_size + 20))
+    screen.blit(dice_value_surface, (dice_area_rect.x + dice_area_size // 2 - dice_value_surface.get_width() // 2, 
+                                     dice_area_rect.y + dice_area_size // 2 - dice_value_surface.get_height() // 2))
 
 # Mostrar texto en la pantalla
 def display_text(text, color=BLACK, y_offset=0):
@@ -162,25 +170,24 @@ def show_welcome_screen():
     welcome_image = pygame.transform.scale(welcome_image, (WIDTH, HEIGHT))
     screen.blit(welcome_image, (0, 0))
     pygame.display.update()
-    pygame.time.delay(2000)  # Mostrar la pantalla de bienvenida durante 2 segundos
+    pygame.time.wait(2000)  # Esperar 2 segundos
 
-# Pantalla de inicio
+# Pantalla de inicio (selección de modo de juego)
 def show_start_screen():
     screen.fill(WHITE)
+    # Cargar imágenes para botones
+    solitary_image = pygame.image.load('camino del saber/solitario.png')
+    invite_image = pygame.image.load('camino del saber/invitar.png')
     
-    # Cargar imágenes de botones
-    solitary_image = pygame.image.load('camino del saber/solitario.png')  # Asegúrate de usar la ruta correcta
-    invite_image = pygame.image.load('camino del saber/invitar.png')  # Asegúrate de usar la ruta correcta
+    button_width, button_height = 300, 100
+    solitary_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 - 60, button_width, button_height)
+    invite_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 + 60, button_width, button_height)
     
-    # Redimensionar las imágenes de los botones
-    button_width, button_height = 200, 100
     solitary_image = pygame.transform.scale(solitary_image, (button_width, button_height))
     invite_image = pygame.transform.scale(invite_image, (button_width, button_height))
     
-    solitary_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 - 60, button_width, button_height)
-    invite_rect = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 + 60, button_width, button_height)
-    screen.blit(solitary_image, solitary_rect)
-    screen.blit(invite_image, invite_rect)
+    screen.blit(solitary_image, solitary_rect.topleft)
+    screen.blit(invite_image, invite_rect.topleft)
 
     pygame.display.update()
 
