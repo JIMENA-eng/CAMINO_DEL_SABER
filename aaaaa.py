@@ -7,7 +7,7 @@ import time
 pygame.init()
 
 # Configuración de la pantalla
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1588, 908
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Juego de Camino Curvado")
 
@@ -172,252 +172,111 @@ def show_start_screen():
     screen.blit(solitary_text, (WIDTH // 2 - solitary_text.get_width() // 2, HEIGHT // 2 - solitary_text.get_height() // 2))
     
     # Botón "Invitar"
-    invite_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50)
+    invite_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 60, 200, 50)
     pygame.draw.rect(screen, GREEN, invite_button)
     invite_text = font.render("Invitar", True, WHITE)
-    screen.blit(invite_text, (WIDTH // 2 - invite_text.get_width() // 2, HEIGHT // 2 + 20 + invite_text.get_height() // 2))
+    screen.blit(invite_text, (WIDTH // 2 - invite_text.get_width() // 2, HEIGHT // 2 + 60 - invite_text.get_height() // 2))
     
     pygame.display.update()
-    
-    return solitary_button, invite_button
 
-# Pantalla de invitación y código
-def show_invite_screen(code):
+# Pantalla de juego terminado
+def show_end_screen(winner):
     screen.fill(WHITE)
-    
-    # Mostrar código
-    code_text = font.render(f"Código de invitación: {code}", True, BLACK)
-    screen.blit(code_text, (WIDTH // 2 - code_text.get_width() // 2, HEIGHT // 2 - 100))
-    
-    # Caja de texto para introducir código
-    input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 30, 200, 40)
-    pygame.draw.rect(screen, BLACK, input_box, 2)
-    input_text = ""
-    input_surface = font.render(input_text, True, BLACK)
-    screen.blit(input_surface, (input_box.x + 5, input_box.y + 5))
-    
-    # Botón "Jugar"
-    play_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 40, 200, 50)
-    pygame.draw.rect(screen, BLUE, play_button)
-    play_text = font.render("Jugar", True, WHITE)
-    screen.blit(play_text, (WIDTH // 2 - play_text.get_width() // 2, HEIGHT // 2 + 40 + play_text.get_height() // 2))
-    
+    end_text = font.render(f"¡{winner} ha ganado!", True, BLACK)
+    screen.blit(end_text, (WIDTH // 2 - end_text.get_width() // 2, HEIGHT // 2 - end_text.get_height() // 2))
     pygame.display.update()
+    pygame.time.delay(2000)  # Mostrar la pantalla de fin durante 2 segundos
 
-    return input_box, play_button
-
-# Pantalla de niveles
-def show_levels_screen():
-    screen.fill(WHITE)
-    
-    # Título de la pantalla de niveles
-    title_text = font.render("Selecciona un nivel", True, BLACK)
-    screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 20))
-    
-    # Botones para los 20 niveles
-    button_width, button_height = 150, 40
-    margin = 10
-    levels_per_row = 4
-    for i in range(20):
-        row = i // levels_per_row
-        col = i % levels_per_row
-        level_button = pygame.Rect(
-            (WIDTH - levels_per_row * (button_width + margin) + col * (button_width + margin) + margin),
-            100 + row * (button_height + margin),
-            button_width,
-            button_height
-        )
-        pygame.draw.rect(screen, BLUE, level_button)
-        level_text = font.render(f"Nivel {i + 1}", True, WHITE)
-        screen.blit(level_text, (level_button.x + (button_width - level_text.get_width()) // 2,
-                                  level_button.y + (button_height - level_text.get_height()) // 2))
-    
-    pygame.display.update()
-    
-    return [pygame.Rect(
-        (WIDTH - levels_per_row * (button_width + margin) + i % levels_per_row * (button_width + margin) + margin),
-        100 + i // levels_per_row * (button_height + margin),
-        button_width,
-        button_height
-    ) for i in range(20)]
-
-# Bucle principal del juego
-def main_game():
-    global current_player, question_active, correct_answer, options, selected_option, start_time, dice_roll
-    
-    game_over = False
-    message = ""
-    question_message = ""
-    answer_message = ""
-    question_active = False
-    correct_answer = ""
-    options = []
-    selected_option = 0
-    start_time = 0
-    
-    clock = pygame.time.Clock()
-    
-    while not game_over:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                # Comprobar si se ha hecho clic en el área del dado
-                if WIDTH - 120 <= mouse_x <= WIDTH - 20 and HEIGHT - 120 <= mouse_y <= HEIGHT - 20:
-                    dice_roll = roll_dice()
-                    message = f"{players[current_player].name} tiró un {dice_roll}"
-                    
-                    # Mover al jugador actual
-                    players[current_player].move(dice_roll)
-                    current_position = players[current_player].position
-                    message += f" y se movió a la casilla {current_position + 1}"
-
-                    # Si cae en una casilla con una pregunta
-                    if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
-                        question = ask_random_question()
-                        question_message = question["question"]
-                        correct_answer = question["answer"]
-                        options = question["options"]
-                        question_active = True  # Activar el estado de pregunta
-                        selected_option = 0  # Reiniciar opción seleccionada
-                        start_time = time.time()  # Iniciar temporizador
-
-                    # Verificar si el jugador actual ha llegado al final
-                    if current_position == len(BOARD_POSITIONS) - 1:
-                        message = f"{players[current_player].name} ha ganado el juego!"
-                        game_over = True
-                        break
-
-                    # Cambiar de turno al bot
-                    current_player = (current_player + 1) % 2
-
-            if event.type == pygame.KEYDOWN and question_active:
-                # Navegar por las opciones de respuesta con las teclas arriba y abajo
-                if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % len(options)
-                elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options)
-                elif event.key == pygame.K_RETURN:
-                    # El jugador elige la opción
-                    if options[selected_option].lower() == correct_answer.lower():
-                        answer_message = "¡Respuesta correcta!"
-                        if current_player == 0:  # Usuario
-                            bot_player.correct_answers += 1  # Incrementar el contador del bot
-                        else:  # Bot
-                            user_player.correct_answers += 1  # Incrementar el contador del usuario
-                    else:
-                        answer_message = f"Incorrecto. La respuesta era: {correct_answer}"
-                    question_active = False  # Terminar el estado de pregunta
-
-        # Lógica de temporizador de preguntas
-        if question_active:
-            remaining_time = countdown_timer(start_time)
-            if remaining_time == 0:
-                answer_message = f"Tiempo agotado. La respuesta era: {correct_answer}"
-                question_active = False
-
-        # Movimiento automático del bot
-        if not question_active and current_player == 1:  # Si es el turno del bot
-            dice_roll = roll_dice()
-            message = f"{players[current_player].name} tiró un {dice_roll}"
-            
-            # Mover al bot
-            bot_player.move(dice_roll)
-            current_position = bot_player.position
-            message += f" y se movió a la casilla {current_position + 1}"
-
-            # Si cae en una casilla con una pregunta
-            if current_position in random.sample(range(1, 19), 5):  # Casillas con preguntas aleatorias
-                question = ask_random_question()
-                selected_option = bot_player.auto_answer(question)  # Bot responde automáticamente
-                if selected_option.lower() == question["answer"].lower():
-                    answer_message = "¡Respuesta correcta!"
-                    bot_player.correct_answers += 1  # Incrementar el contador del bot
-                else:
-                    answer_message = f"Incorrecto. La respuesta era: {question['answer']}"
-
-            # Cambiar de turno al usuario
-            current_player = (current_player + 1) % 2
-
-        # Actualizar pantalla
-        draw_board()
-        if question_active:
-            show_question_screen(question_message, options, selected_option, remaining_time)
-        if message:
-            display_text(message, BLACK, y_offset=0)
-        if answer_message:
-            display_text(answer_message, RED, y_offset=50)
-
-        pygame.display.update()
-        clock.tick(30)  # Limitar a 30 fotogramas por segundo
-    
-    # Mostrar pantalla de niveles después de terminar el juego
-    levels_buttons = show_levels_screen()
-    
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                for i, button in enumerate(levels_buttons):
-                    if button.collidepoint(mouse_x, mouse_y):
-                        # Aquí puedes manejar la lógica para iniciar el nivel seleccionado
-                        print(f"Nivel {i + 1} seleccionado")
-                        return
-
-# Pantalla de invitación y código
-def invite_screen():
-    global current_player, question_active, correct_answer, options, selected_option, start_time, dice_roll
-    
-    code = generate_code()
-    
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                if play_button.collidepoint(mouse_x, mouse_y):
-                    main_game()  # Redirigir al juego
-                    return
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    # Aquí puedes manejar la lógica para verificar el código ingresado
-                    pass
-
-        input_box, play_button = show_invite_screen(code)
-
-        pygame.display.update()
-
-# Pantalla principal
+# Función principal del juego
 def main():
-    show_welcome_screen()  # Mostrar pantalla de bienvenida
+    global current_player
+
+    show_welcome_screen()
+    show_start_screen()
     
-    while True:
-        solitary_button, invite_button = show_start_screen()
-
+    game_started = False
+    while not game_started:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 50).collidepoint(x, y):
+                    game_started = True
+                    game_mode = 'solitario'
+                elif pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 60, 200, 50).collidepoint(x, y):
+                    # Implementar lógica para invitar a otro jugador
+                    pass
+    
+    if game_mode == 'solitario':
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_x, mouse_y = event.pos
-                    if solitary_button.collidepoint(mouse_x, mouse_y):
-                        main_game()  # Iniciar juego en solitario
-                        return
-                    if invite_button.collidepoint(mouse_x, mouse_y):
-                        invite_screen()  # Ir a pantalla de invitación
+            draw_board()
+            pygame.display.update()
+            
+            # Lanzar dado
+            roll_dice()
+            display_text(f"Dado: {dice_roll}")
+            
+            # Mover jugador
+            current_player_instance = players[current_player]
+            current_player_instance.move(dice_roll)
+            
+            # Pregunta aleatoria
+            question = ask_random_question()
+            options = question["options"]
+            correct_answer = question["answer"]
+            
+            # Pregunta y temporizador
+            start_time = time.time()
+            remaining_time = 10
+            selected_option = None
+            
+            while remaining_time > 0:
+                draw_board()
+                pygame.display.update()
+                remaining_time = countdown_timer(start_time)
+                
+                show_question_screen(question["question"], options, selected_option if selected_option is not None else -1, remaining_time)
+                
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_1:
+                            selected_option = 0
+                        elif event.key == pygame.K_2:
+                            selected_option = 1
+                        elif event.key == pygame.K_3:
+                            selected_option = 2
+                        elif event.key == pygame.K_4:
+                            selected_option = 3
+                        if selected_option is not None:
+                            if options[selected_option] == correct_answer:
+                                current_player_instance.correct_answers += 1
+                            break
+                
+                if selected_option is not None:
+                    break
+            
+            if selected_option is not None and options[selected_option] == correct_answer:
+                display_text("Respuesta correcta!", GREEN, 40)
+            else:
+                display_text("Respuesta incorrecta!", RED, 40)
+            
+            pygame.display.update()
+            pygame.time.delay(1000)
+            
+            # Verificar si el jugador ha ganado
+            if current_player_instance.position >= len(BOARD_POSITIONS) - 1:
+                show_end_screen(current_player_instance.name)
+                break
+            
+            # Cambiar de jugador
+            current_player = (current_player + 1) % len(players)
+            
+    pygame.quit()
 
 if __name__ == "__main__":
     main()
