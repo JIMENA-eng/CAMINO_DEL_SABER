@@ -153,8 +153,11 @@ def generate_code():
 # Pantalla de bienvenida
 def show_welcome_screen():
     screen.fill(WHITE)
-    welcome_text = font.render("Caminos del Saber", True, BLACK)
-    screen.blit(welcome_text, (WIDTH // 2 - welcome_text.get_width() // 2, HEIGHT // 2 - welcome_text.get_height() // 2))
+    # Cargar la imagen
+    welcome_image = pygame.image.load('camino del saber/pantalla.png')  # Asegúrate de usar la ruta correcta
+    # Redimensionar la imagen si es necesario
+    welcome_image = pygame.transform.scale(welcome_image, (WIDTH, HEIGHT))
+    screen.blit(welcome_image, (0, 0))
     pygame.display.update()
     pygame.time.delay(2000)  # Mostrar la pantalla de bienvenida durante 2 segundos
 
