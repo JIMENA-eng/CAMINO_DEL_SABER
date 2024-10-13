@@ -251,9 +251,58 @@ def tercer_web():
         pygame.display.update()  # Actualizar la pantalla
         pygame.time.Clock().tick(60)  # Limitar la velocidad de fotogramas a 60 FPS
         
+def seleccionar_nivel():
+    screen.fill(WHITE)
+    font = pygame.font.Font(None, 48)
+    
+    # Instrucciones para el usuario
+    instruction_text = font.render("Selecciona un nivel (1-10)", True, BLACK)
+    screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT // 2 - 200))
+    
+    # Cargar las imágenes de los niveles (10 imágenes)
+    level_images = [pygame.image.load(f'camino del saber/nivel{i}.png') for i in range(1, 11)]  # Asumiendo que las imágenes están numeradas como 'nivel1.png', 'nivel2.png', ..., 'nivel10.png'
+    image_size = (100, 100)  # Tamaño para las imágenes de los niveles
+    level_images = [pygame.transform.scale(img, image_size) for img in level_images]  # Redimensionar las imágenes
+    
+    # Crear una lista para los rectángulos de los niveles, utilizados para la detección de clics
+    level_rects = []
+    button_width, button_height = image_size
+    
+    # Distribuir las imágenes de los niveles en una cuadrícula de 5 columnas y 2 filas (10 niveles en total)
+    for i in range(10):
+        col = i % 5  # 5 columnas
+        row = i // 5  # 2 filas
+        level_rect = pygame.Rect(WIDTH // 2 - (2.5 * button_width) + col * (button_width + 20),
+                                 HEIGHT // 2 - 100 + row * (button_height + 20),
+                                 button_width, button_height)
+        level_rects.append(level_rect)
+        
+        # Dibujar la imagen del nivel en su respectiva posición
+        screen.blit(level_images[i], level_rect.topleft)
+    
+    pygame.display.update()
+
+    selected_level = None
+    while selected_level is None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Detectar en qué imagen se hizo clic
+                for rect, i in zip(level_rects, range(10)):
+                    if rect.collidepoint(event.pos):
+                        selected_level = i + 1  # El nivel seleccionado será el índice + 1
+                        break
+
+    return selected_level
 
 def show_start_screen():
     screen.fill(WHITE)
+    wel_nivel = pygame.image.load('camino del saber/fondo4.png')
+    wel_nivel = pygame.transform.scale(wel_nivel, (WIDTH, HEIGHT))
+    screen.blit(wel_nivel, (0, 0))
+
     wel_bt = pygame.image.load('camino del saber/fondo2.png')
     wel_bt = pygame.transform.scale(wel_bt, (WIDTH, HEIGHT))
     screen.blit(wel_bt, (0, 0))
@@ -331,8 +380,8 @@ def main():
     segundo_screen()
     tercer_web()
     game_mode = show_start_screen()
-    selected_level = 1  # Aquí agregamos una selección de nivel por defecto
-    print(f"Nivel seleccionado: {selected_level}")
+    selected_level = seleccionar_nivel() # Aquí agregamos una selección de nivel por defecto
+    
 
     user_name, user_piece_image = show_name_and_piece_screen()
 
