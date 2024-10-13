@@ -217,12 +217,12 @@ def tercer_web():
     
     # Posiciones de las imágenes
     positions = [
-        (350 , 5),  # Posición de la primera imagen
-        (350, 5),  # Posición de la segunda imagen
-        (350, 5),  # Posición de la tercera imagen
-        (350, 5),  # Posición de la cuarta imagen
-        (250, 100),  # Posición de la quinta imagen
-        (300, 100)
+        (500 , 5),  # Posición de la primera imagen
+        (500, 5),  # Posición de la segunda imagen
+        (500, 5),  # Posición de la tercera imagen
+        (500, 5),  # Posición de la cuarta imagen
+        (150, 100),  # Posición de la quinta imagen
+        (200, 100)
     ]
     
     # Cargar las imágenes y redimensionarlas
@@ -253,6 +253,9 @@ def tercer_web():
         
 def seleccionar_nivel():
     screen.fill(WHITE)
+    wel_nivel = pygame.image.load('camino del saber/fondo4.png')
+    wel_nivel = pygame.transform.scale(wel_nivel, (WIDTH, HEIGHT))
+    screen.blit(wel_nivel, (0, 0))
     font = pygame.font.Font(None, 48)
     
     # Instrucciones para el usuario
@@ -299,10 +302,6 @@ def seleccionar_nivel():
 
 def show_start_screen():
     screen.fill(WHITE)
-    wel_nivel = pygame.image.load('camino del saber/fondo4.png')
-    wel_nivel = pygame.transform.scale(wel_nivel, (WIDTH, HEIGHT))
-    screen.blit(wel_nivel, (0, 0))
-
     wel_bt = pygame.image.load('camino del saber/fondo2.png')
     wel_bt = pygame.transform.scale(wel_bt, (WIDTH, HEIGHT))
     screen.blit(wel_bt, (0, 0))
