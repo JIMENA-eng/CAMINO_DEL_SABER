@@ -1,87 +1,77 @@
-
 import pygame
-import imageio
+import sys
+import random
 
-# Inicializa Pygame
+# Inicializar pygame
 pygame.init()
 
-# Configuración para pantalla completa
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # Esto hace que la ventana sea pantalla completa
-WIDTH, HEIGHT = screen.get_size()  # Obtiene el tamaño de la pantalla completa
+# Configuración de la ventana
+ANCHO = 400
+ALTO = 400
+screen = pygame.display.set_mode((ANCHO, ALTO))
+pygame.display.set_caption("Dado con Pygame")
 
-# Cargar el GIF usando imageio
-gif_path = "camino del saber/fondo2.gif"
-gif = imageio.mimread(gif_path)
+# Colores
+BLANCO = (255, 255, 255)
+NEGRO = (0, 0, 0)
+ROJO = (255, 0, 0)
 
-# Convertir las imágenes a superficies de Pygame
-frames = [pygame.surfarray.make_surface(frame) for frame in gif]
+# Tamaño del dado
+TAMANO_DADO = 150
+BORDES = 10  # Grosor de los bordes del dado
 
-# Si los fotogramas están en formato vertical, se pueden rotar a horizontal
-# Lo que haremos es tomar la primera imagen, y reestructurarla de forma horizontal
-frame_width = frames[0].get_width()
-frame_height = frames[0].get_height()
+# Función para dibujar el dado
+def dibujar_dado(numero, x, y):
+    # Dibujar el fondo del dado (un cuadrado)
+    pygame.draw.rect(screen, BLANCO, (x, y, TAMANO_DADO, TAMANO_DADO))
+    pygame.draw.rect(screen, NEGRO, (x, y, TAMANO_DADO, TAMANO_DADO), BORDES)  # Borde negro
+    
+    # Posiciones de los puntos (distribución clásica de un dado)
+    puntos = []
+    
+    if numero == 1:
+        puntos = [(x + TAMANO_DADO // 2, y + TAMANO_DADO // 2)]  # Un punto en el centro
+    elif numero == 2:
+        puntos = [(x + TAMANO_DADO // 4, y + TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4)]  # Dos puntos en diagonal
+    elif numero == 3:
+        puntos = [(x + TAMANO_DADO // 2, y + TAMANO_DADO // 2),  # Punto central
+                  (x + TAMANO_DADO // 4, y + TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4)]  # Diagonal
+    elif numero == 4:
+        puntos = [(x + TAMANO_DADO // 4, y + TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + TAMANO_DADO // 4),  # Esquinas superiores
+                  (x + TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4)]  # Esquinas inferiores
+    elif numero == 5:
+        puntos = [(x + TAMANO_DADO // 2, y + TAMANO_DADO // 2),  # Punto central
+                  (x + TAMANO_DADO // 4, y + TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + TAMANO_DADO // 4),  # Esquinas superiores
+                  (x + TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4)]  # Esquinas inferiores
+    elif numero == 6:
+        puntos = [(x + TAMANO_DADO // 4, y + TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + TAMANO_DADO // 4),  # Columna superior
+                  (x + TAMANO_DADO // 4, y + TAMANO_DADO // 2), (x + 3 * TAMANO_DADO // 4, y + TAMANO_DADO // 2),  # Columna del medio
+                  (x + TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4), (x + 3 * TAMANO_DADO // 4, y + 3 * TAMANO_DADO // 4)]  # Columna inferior
+    
+    # Dibujar los puntos
+    for punto in puntos:
+        pygame.draw.circle(screen, NEGRO, punto, 10)
 
-# Crear una nueva lista con las imágenes rotadas
-rotated_frames = []
-
-# Aquí, si los fotogramas están organizados verticalmente (uno encima de otro),
-# los reorganizamos en una secuencia horizontal. Esto es útil si tienes imágenes
-# grandes en una sola columna.
-for i in range(len(frames)):
-    # En este caso no estamos rotando, solo reestructuramos
-    rotated_frame = pygame.transform.rotate(frames[i], 270)  # Rotamos 90 grados para hacerlo horizontal
-    rotated_frames.append(rotated_frame)
-
-# Cargar las 5 imágenes adicionales
-image_paths = [
-    "camino del saber/ficha1.png",  # Cambia esto a tus imágenes
-    "camino del saber/ficha2.png",
-    "camino del saber/ficha3.png",
-    "camino del saber/ficha4.png",
-    "camino del saber/ficha5.png"
-
-]
-
-# Cargar las imágenes adicionales
-images = [pygame.image.load(img_path) for img_path in image_paths]
-
-# Animar los fotogramas
-clock = pygame.time.Clock()
+# Bucle principal
 running = True
-frame_index = 0
-
+numero_dado = random.randint(1, 6)  # Inicializar el número del dado aleatoriamente
 while running:
+    screen.fill(ROJO)  # Fondo rojo
+    
+    # Dibujar el dado con el número aleatorio
+    dibujar_dado(numero_dado, (ANCHO - TAMANO_DADO) // 2, (ALTO - TAMANO_DADO) // 2)
+
+    # Actualizar pantalla
+    pygame.display.flip()
+
+    # Detectar eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:  # Cuando presionamos la tecla de espacio, tiramos el dado
+                numero_dado = random.randint(1, 6)  # Generar un número aleatorio entre 1 y 6
 
-    # Limpiar la pantalla (hacerla blanca o el color que desees)
-    screen.fill((255, 255, 255))
-
-    # Mostrar el fotograma del GIF
-    gif_frame = pygame.transform.scale(rotated_frames[frame_index], (WIDTH, HEIGHT))
-    screen.blit(gif_frame, (0, 0))
-
-    # Mostrar las 5 imágenes encima del GIF
-    positions = [
-        (50, 50),  # Posición de la primera imagen
-        (150, 100),  # Posición de la segunda imagen
-        (250, 150),  # Posición de la tercera imagen
-        (350, 200),  # Posición de la cuarta imagen
-        (450, 250)   # Posición de la quinta imagen
-    ]
-
-    for img, pos in zip(images, positions):
-        img_resized = pygame.transform.scale(img, (100, 100))  # Redimensionar a 100x100 px
-        screen.blit(img_resized, pos)
-
-    # Actualizar la pantalla
-    pygame.display.update()
-
-    # Avanzar al siguiente fotograma
-    frame_index = (frame_index + 1) % len(rotated_frames)
-
-    # Controlar la velocidad de la animación
-    clock.tick(10)  # 10 FPS
-
+# Salir de pygame
 pygame.quit()
+sys.exit()
