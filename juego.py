@@ -1,67 +1,87 @@
-import pygame
 
-# Inicializar Pygame
+import pygame
+import imageio
+
+# Inicializa Pygame
 pygame.init()
 
-# Dimensiones de la ventana
-ANCHO = 800
-ALTO = 600
-ventana = pygame.display.set_mode((ANCHO, ALTO))
-pygame.display.set_caption("Mover Triángulo con Pygame")
+# Configuración para pantalla completa
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # Esto hace que la ventana sea pantalla completa
+WIDTH, HEIGHT = screen.get_size()  # Obtiene el tamaño de la pantalla completa
 
-# Colores
-BLANCO = (255, 255, 255)
-AZUL = (0, 0, 255)
+# Cargar el GIF usando imageio
+gif_path = "camino del saber/fondo2.gif"
+gif = imageio.mimread(gif_path)
 
-# Coordenadas iniciales del triángulo
-x = 350
-y = 250
+# Convertir las imágenes a superficies de Pygame
+frames = [pygame.surfarray.make_surface(frame) for frame in gif]
 
-# Velocidad de movimiento
-velocidad = 10
+# Si los fotogramas están en formato vertical, se pueden rotar a horizontal
+# Lo que haremos es tomar la primera imagen, y reestructurarla de forma horizontal
+frame_width = frames[0].get_width()
+frame_height = frames[0].get_height()
 
-# Vértices del triángulo
-punto1 = (x, y)  # Vértice superior
-punto2 = (x - 50, y + 100)  # Vértice inferior izquierdo
-punto3 = (x + 50, y + 100)  # Vértice inferior derecho
+# Crear una nueva lista con las imágenes rotadas
+rotated_frames = []
 
-# Lista de los vértices del triángulo
-vertices = [punto1, punto2, punto3]
+# Aquí, si los fotogramas están organizados verticalmente (uno encima de otro),
+# los reorganizamos en una secuencia horizontal. Esto es útil si tienes imágenes
+# grandes en una sola columna.
+for i in range(len(frames)):
+    # En este caso no estamos rotando, solo reestructuramos
+    rotated_frame = pygame.transform.rotate(frames[i], 270)  # Rotamos 90 grados para hacerlo horizontal
+    rotated_frames.append(rotated_frame)
 
-# Bucle principal
-while True:
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+# Cargar las 5 imágenes adicionales
+image_paths = [
+    "camino del saber/ficha1.png",  # Cambia esto a tus imágenes
+    "camino del saber/ficha2.png",
+    "camino del saber/ficha3.png",
+    "camino del saber/ficha4.png",
+    "camino del saber/ficha5.png"
 
-    # Obtener las teclas presionadas
-    teclas = pygame.key.get_pressed()
+]
 
-    # Mover el triángulo con las teclas de dirección
-    if teclas[pygame.K_LEFT]:  # Tecla izquierda
-        x -= velocidad
-    if teclas[pygame.K_RIGHT]:  # Tecla derecha
-        x += velocidad
-    if teclas[pygame.K_UP]:  # Tecla arriba
-        y -= velocidad
-    if teclas[pygame.K_DOWN]:  # Tecla abajo
-        y += velocidad
+# Cargar las imágenes adicionales
+images = [pygame.image.load(img_path) for img_path in image_paths]
 
-    # Actualizar los vértices del triángulo según la nueva posición
-    punto1 = (x, y)
-    punto2 = (x - 50, y + 100)
-    punto3 = (x + 50, y + 100)
-    vertices = [punto1, punto2, punto3]
+# Animar los fotogramas
+clock = pygame.time.Clock()
+running = True
+frame_index = 0
 
-    # Limpiar la ventana
-    ventana.fill(BLANCO)
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-    # Dibujar el triángulo
-    pygame.draw.polygon(ventana, AZUL, vertices)
+    # Limpiar la pantalla (hacerla blanca o el color que desees)
+    screen.fill((255, 255, 255))
+
+    # Mostrar el fotograma del GIF
+    gif_frame = pygame.transform.scale(rotated_frames[frame_index], (WIDTH, HEIGHT))
+    screen.blit(gif_frame, (0, 0))
+
+    # Mostrar las 5 imágenes encima del GIF
+    positions = [
+        (50, 50),  # Posición de la primera imagen
+        (150, 100),  # Posición de la segunda imagen
+        (250, 150),  # Posición de la tercera imagen
+        (350, 200),  # Posición de la cuarta imagen
+        (450, 250)   # Posición de la quinta imagen
+    ]
+
+    for img, pos in zip(images, positions):
+        img_resized = pygame.transform.scale(img, (100, 100))  # Redimensionar a 100x100 px
+        screen.blit(img_resized, pos)
 
     # Actualizar la pantalla
-    pygame.display.flip()
+    pygame.display.update()
+
+    # Avanzar al siguiente fotograma
+    frame_index = (frame_index + 1) % len(rotated_frames)
 
     # Controlar la velocidad de la animación
-    pygame.time.delay(20)
+    clock.tick(10)  # 10 FPS
+
+pygame.quit()
