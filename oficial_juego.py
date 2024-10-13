@@ -344,7 +344,6 @@ def seleccionar_ficha():
 
     return selected_piece
 
-
 def show_start_screen():
     screen.fill(WHITE)
     wel_bt = pygame.image.load('camino del saber/fondo2.png')
@@ -377,8 +376,10 @@ def show_start_screen():
                 if invite_rect.collidepoint(event.pos):
                     return "invitar"
 
-def show_name_and_piece_screen():
+def ventana_ingresar_name():
     screen.fill(WHITE)
+
+    # Cargar el fondo
     wel_name = pygame.image.load('camino del saber/fondo3.png')
     wel_name = pygame.transform.scale(wel_name, (WIDTH, HEIGHT))
     screen.blit(wel_name, (0, 0))
@@ -387,48 +388,97 @@ def show_name_and_piece_screen():
     title_text = font.render("Ingresa tu nombre:", True, BLACK)
     screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 2 - 200))
 
-    pygame.display.update()
-
-    user_name = ""
     input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 50, 300, 50)
     color = pygame.Color('lightskyblue3')
     
+    user_name = ""
+    pygame.draw.rect(screen, color, input_box, 2)
+    input_text = font.render(user_name, True, BLACK)
+    screen.blit(input_text, (input_box.x + 5, input_box.y + 5))
+
+    pygame.display.update()
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+                
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    return user_name, 'camino del saber/ficha1.png'
+                    return user_name  # Retorna el nombre cuando presionan Enter
                 elif event.key == pygame.K_BACKSPACE:
                     user_name = user_name[:-1]
                 else:
                     user_name += event.unicode
+        
+            # Redibujar para cada evento
+            screen.fill(WHITE)
+            screen.blit(wel_name, (0, 0))
+            screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 2 - 200))
+            pygame.draw.rect(screen, color, input_box, 2)
+            input_text = font.render(user_name, True, BLACK)
+            screen.blit(input_text, (input_box.x + 5, input_box.y + 5))
+            pygame.display.update()
 
-        screen.fill(WHITE)
-        wel_name = pygame.image.load('camino del saber/fondo3.png')
-        wel_name = pygame.transform.scale(wel_name, (WIDTH, HEIGHT))
-        screen.blit(wel_name, (0, 0))
-        title_text = font.render("Ingresa tu nombre:", True, BLACK)
-        screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 2 - 200))
+def eligir_ficha():
+    screen.fill(WHITE)
 
-        pygame.draw.rect(screen, color, input_box, 2)
-        input_text = font.render(user_name, True, BLACK)
-        screen.blit(input_text, (input_box.x + 5, input_box.y + 5))
+    # Cargar el fondo
+    wel_piece = pygame.image.load('camino del saber/fondo4.png')
+    wel_piece = pygame.transform.scale(wel_piece, (WIDTH, HEIGHT))
+    screen.blit(wel_piece, (0, 0))
+
+    font = pygame.font.Font(None, 48)
+    title_text = font.render("Selecciona una ficha:", True, BLACK)
+    screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 2 - 200))
+
+    # Cargar las imágenes de las fichas
+    piece_images = [pygame.image.load(f'camino del saber/ficha{i}.png') for i in range(1, 15)]
+    piece_size = 100
+    piece_images = [pygame.transform.scale(img, (piece_size, piece_size)) for img in piece_images]
+
+    # Crear los rectángulos para las fichas
+    piece_rects = []
+    for i, image in enumerate(piece_images):
+        x = WIDTH // 2 - (2 * piece_size) + (i % 4) * (piece_size + 20)
+        y = HEIGHT // 2 + 50 + (i // 4) * (piece_size + 20)
+        rect = pygame.Rect(x, y, piece_size, piece_size)
+        piece_rects.append(rect)
+    
+    # Mostrar las fichas
+    for i, rect in enumerate(piece_rects):
+        screen.blit(piece_images[i], rect.topleft)
+
+    pygame.display.update()
+
+    selected_piece = None
+    while selected_piece is None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, rect in enumerate(piece_rects):
+                    if rect.collidepoint(event.pos):
+                        selected_piece = f'camino del saber/ficha{i + 1}.png'  # Seleccionar la ficha al hacer clic
 
         pygame.display.update()
+
+    return selected_piece  # Devuelve la ficha seleccionada
+
 
 def main():
     show_welcome_screen()
     segundo_screen()
     tercer_web()
-    game_mode = show_start_screen()
-    selected_level = seleccionar_nivel()
-    seleccionar_ficha() 
+    show_start_screen()
+    seleccionar_nivel()
     
+    user_name = ventana_ingresar_name()
+    user_piece_image = eligir_ficha()
 
-    user_name, user_piece_image = show_name_and_piece_screen()
 
     user_player = Player(user_name, RED, user_piece_image)
     players.append(user_player)
