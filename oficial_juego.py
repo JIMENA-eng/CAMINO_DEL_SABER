@@ -1,7 +1,7 @@
 import pygame
 import random
 import time
-import imageio
+
 
 pygame.init()
 
@@ -13,6 +13,8 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+
+
 
 fuente = pygame.font.Font(None, 36)
 grande_fuente = pygame.font.Font(None, 24)
@@ -80,32 +82,75 @@ dice_roll = 1
 
 def roll_dice():
     global dice_roll
-    dice_roll = random.randint(1, 6)
+    dice_roll =random.randint(1,6)
     return dice_roll
+
+def dibujar_dado(screen, numero, x, y, tamano_dado):
+    # Dibuja un cuadrado blanco para el dado
+    pygame.draw.rect(screen, WHITE, (x, y, tamano_dado, tamano_dado))
+    pygame.draw.rect(screen, BLACK, (x, y, tamano_dado, tamano_dado), 5)  # Borde negro
+    
+    puntos = []
+    
+    # Dependiendo del número, dibuja los puntos
+    if numero == 1:
+        puntos = [(x + tamano_dado // 2, y + tamano_dado // 2)]  # Un punto en el centro
+    elif numero == 2:
+        puntos = [(x + tamano_dado // 4, y + tamano_dado // 4), (x + 3 * tamano_dado // 4, y + 3 * tamano_dado // 4)]  # Dos puntos en diagonal
+    elif numero == 3:
+        puntos = [(x + tamano_dado // 2, y + tamano_dado // 2),  # Punto central
+                  (x + tamano_dado // 4, y + tamano_dado // 4), (x + 3 * tamano_dado // 4, y + 3 * tamano_dado // 4)]  # Diagonal
+    elif numero == 4:
+        puntos = [(x + tamano_dado // 4, y + tamano_dado // 4), (x + 3 * tamano_dado // 4, y + tamano_dado // 4),  # Esquinas superiores
+                  (x + tamano_dado // 4, y + 3 * tamano_dado // 4), (x + 3 * tamano_dado // 4, y + 3 * tamano_dado // 4)]  # Esquinas inferiores
+    elif numero == 5:
+        puntos = [(x + tamano_dado // 2, y + tamano_dado // 2),  # Punto central
+                  (x + tamano_dado // 4, y + tamano_dado // 4), (x + 3 * tamano_dado // 4, y + tamano_dado // 4),  # Esquinas superiores
+                  (x + tamano_dado // 4, y + 3 * tamano_dado // 4), (x + 3 * tamano_dado // 4, y + 3 * tamano_dado // 4)]  # Esquinas inferiores
+    elif numero == 6:
+        puntos = [(x + tamano_dado // 4, y + tamano_dado // 4), (x + 3 * tamano_dado // 4, y + tamano_dado // 4),  # Columna superior
+                  (x + tamano_dado // 4, y + tamano_dado // 2), (x + 3 * tamano_dado // 4, y + tamano_dado // 2),  # Columna del medio
+                  (x + tamano_dado // 4, y + 3 * tamano_dado // 4), (x + 3 * tamano_dado // 4, y + 3 * tamano_dado // 4)]  # Columna inferior
+    
+    for punto in puntos:
+        pygame.draw.circle(screen, BLACK, punto, tamano_dado // 10)
 
 def ask_random_question():
     return random.choice(QUESTIONS)
 
 def draw_board():
     screen.fill(WHITE)
+
+    # Fondo del tablero
     wel_bt = pygame.image.load('camino del saber/fondo3.png')
     wel_bt = pygame.transform.scale(wel_bt, (WIDTH, HEIGHT))
     screen.blit(wel_bt, (0, 0))
 
+    # Dibujar las posiciones del tablero
     for pos in BOARD_POSITIONS:
         pygame.draw.rect(screen, BLACK, pygame.Rect(pos[0], pos[1], 80, 80), 2)
 
+    # Dibujar las piezas de los jugadores
     for player in players:
         screen.blit(player.piece_image, (player.x, player.y))
 
+    # Dibujar el puntaje de los jugadores
     for player in players:
         text_surface = grande_fuente.render(f"{player.name}: {player.correct_answers}", True, BLACK)
         screen.blit(text_surface, (20, 20 + players.index(player) * 30))
 
+    # Área para el dado
     dice_area_size = 150
     dice_area_rect = pygame.Rect(WIDTH - dice_area_size - 20, HEIGHT - dice_area_size - 20, dice_area_size, dice_area_size)
+    
+    # Dibujar el borde del área del dado
     pygame.draw.rect(screen, BLACK, dice_area_rect, 2)
-    pygame.draw.rect(screen, WHITE, dice_area_rect.inflate(-4, -4))
+    pygame.draw.rect(screen, WHITE, dice_area_rect.inflate(-4, -4))  # Fondo blanco dentro del área
+
+    # Dibujar el dado visualmente (lo que ya tienes implementado)
+    dibujar_dado(screen, dice_roll, dice_area_rect.x + 10, dice_area_rect.y + 10, dice_area_size - 20)
+
+    # Mostrar el valor numérico del dado (en el centro del área)
     dice_value_surface = fuente.render(str(dice_roll), True, BLACK)
     screen.blit(dice_value_surface, (dice_area_rect.x + dice_area_size // 2 - dice_value_surface.get_width() // 2, 
                                      dice_area_rect.y + dice_area_size // 2 - dice_value_surface.get_height() // 2))
@@ -476,46 +521,61 @@ def main():
     show_start_screen()
     seleccionar_nivel()
     
+    global dice_roll, current_player
+    # Solicitar el nombre del jugador y la ficha
     user_name = ventana_ingresar_name()
     user_piece_image = eligir_ficha()
 
-
+    # Crear el jugador
     user_player = Player(user_name, RED, user_piece_image)
     players.append(user_player)
 
-    global current_player
+    # Configuración de variables globales
+    current_player = 0
+    clock = pygame.time.Clock()
+    
+    # Bucle principal del juego
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    roll_dice()
-                    players[current_player].move(dice_roll)
-                    draw_board()
+                if event.key == pygame.K_SPACE:  # Cuando se presiona espacio, lanzamos el dado
+                    roll_dice()  # Lanza el dado
+                    players[current_player].move(dice_roll)  # Mueve al jugador con el valor del dado
+                    draw_board()  # Dibuja el tablero
+                    
                     pygame.display.update()
 
+                    # Realizar pregunta aleatoria
                     question = ask_random_question()
                     selected_option = players[current_player].auto_answer(question)
                     if selected_option == question["answer"]:
                         players[current_player].correct_answers += 1
 
+                    # Cambiar al siguiente jugador
                     current_player = (current_player + 1) % len(players)
                     time.sleep(1)
 
         if current_player == 0:  # El bot mueve automáticamente
             roll_dice()
-            players[current_player].move(dice_roll)
-            question = ask_random_question()
+            players[current_player].move(dice_roll)  # Mueve al bot con el valor del dado
+            question = ask_random_question()  # Bot responde la pregunta
             selected_option = players[current_player].auto_answer(question)
             if selected_option == question["answer"]:
                 players[current_player].correct_answers += 1
 
+            # Cambiar al siguiente jugador (bot en este caso)
             current_player = (current_player + 1) % len(players)
 
+        # Dibuja el dado y el tablero
         draw_board()
-        pygame.display.update()
+   
+        pygame.display.update()  # Actualiza la pantalla
 
+        # Control de FPS (velocidad del juego)
+        clock.tick(60)
 if __name__ == "__main__":
     main()
