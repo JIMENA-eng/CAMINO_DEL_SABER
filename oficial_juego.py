@@ -300,6 +300,51 @@ def seleccionar_nivel():
 
     return selected_level
 
+def seleccionar_ficha():
+    screen.fill(WHITE)
+    
+    # Cargar y escalar el fondo
+    wel_fi = pygame.image.load('camino del saber/fondo5.png')
+    wel_fi = pygame.transform.scale(wel_fi, (WIDTH, HEIGHT))
+    screen.blit(wel_fi, (0, 0))
+    
+    # Cargar las 14 imágenes de las fichas
+    piece_images = [pygame.image.load(f'camino del saber/ficha{i}.png') for i in range(1, 15)]  # 14 fichas
+    piece_size = 100  # Tamaño de cada ficha
+    piece_images = [pygame.transform.scale(image, (piece_size, piece_size)) for image in piece_images]
+
+    # Crear los rectángulos para cada ficha (para la detección de clics)
+    piece_rects = []
+    for i, image in enumerate(piece_images):
+        # Distribuir las fichas en una cuadrícula de 4 filas y 4 columnas
+        x = WIDTH // 2 - (2 * piece_size) + (i % 4) * (piece_size + 20)  # 4 columnas
+        y = HEIGHT // 2 - (2 * piece_size) + (i // 4) * (piece_size + 20)  # 4 filas
+        rect = pygame.Rect(x, y, piece_size, piece_size)
+        piece_rects.append(rect)
+        screen.blit(image, rect.topleft)
+
+    # Mostrar texto de instrucciones
+    instruction_text = fuente.render("Selecciona tu ficha", True, BLACK)
+    screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT // 2 - piece_size - 30))
+
+    pygame.display.update()
+
+    selected_piece = None
+    while selected_piece is None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, rect in enumerate(piece_rects):
+                    if rect.collidepoint(event.pos):  # Si se hace clic sobre la ficha
+                        selected_piece = piece_images[i]  # Seleccionar la ficha
+                        break
+
+    return selected_piece
+
+
 def show_start_screen():
     screen.fill(WHITE)
     wel_bt = pygame.image.load('camino del saber/fondo2.png')
@@ -379,7 +424,8 @@ def main():
     segundo_screen()
     tercer_web()
     game_mode = show_start_screen()
-    selected_level = seleccionar_nivel() # Aquí agregamos una selección de nivel por defecto
+    selected_level = seleccionar_nivel()
+    seleccionar_ficha() 
     
 
     user_name, user_piece_image = show_name_and_piece_screen()
