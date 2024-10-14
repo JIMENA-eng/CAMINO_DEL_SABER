@@ -14,16 +14,107 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
-
-
 fuente = pygame.font.Font(None, 36)
 grande_fuente = pygame.font.Font(None, 24)
 
-BOARD_POSITIONS = [
-    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50), (550, 50), (650, 50), (750, 50),
-    (750, 150), (650, 150), (550, 150), (450, 150), (350, 150), (250, 150), (150, 150), (50, 150),
-    (50, 250), (150, 250), (250, 250), (350, 250)
+LEVEL_1_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (350, 150), (250, 150), (150, 150), (50, 150)
 ]
+
+LEVEL_2_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250)
+]
+
+LEVEL_3_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350)
+]
+
+LEVEL_4_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (350, 450), (250, 450), (150, 450), (50, 450)
+]
+
+LEVEL_5_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550)
+]
+
+LEVEL_6_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550),
+    (50, 650), (150, 650), (250, 650), (350, 650)
+]
+
+LEVEL_7_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550),
+    (50, 650), (150, 650), (250, 650), (350, 650), (450, 650),
+    (450, 750), (350, 750), (250, 750), (150, 750), (50, 750)
+]
+
+LEVEL_8_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550),
+    (50, 650), (150, 650), (250, 650), (350, 650), (450, 650),
+    (450, 750), (550, 750), (650, 750), (650, 850), (550, 850),
+    (450, 850), (350, 850), (250, 850), (150, 850), (50, 850)
+]
+
+LEVEL_9_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550),
+    (50, 650), (150, 650), (250, 650), (350, 650), (450, 650),
+    (450, 750), (550, 750), (650, 750), (650, 850), (550, 850),
+    (450, 850), (350, 850), (250, 850), (150, 850), (50, 850),
+    (50, 950), (150, 950), (250, 950), (350, 950), (450, 950)
+]
+
+LEVEL_10_POSITIONS = [
+    (50, 50), (150, 50), (250, 50), (350, 50), (450, 50),
+    (450, 150), (550, 150), (650, 150), (650, 250), (550, 250),
+    (450, 250), (350, 250), (250, 250), (150, 250), (50, 250),
+    (50, 350), (150, 350), (250, 350), (350, 350), (450, 350),
+    (450, 450), (550, 450), (650, 450), (650, 550), (550, 550),
+    (450, 550), (350, 550), (250, 550), (150, 550), (50, 550),
+    (50, 650), (150, 650), (250, 650), (350, 650), (450, 650),
+    (450, 750), (550, 750), (650, 750), (650, 850), (550, 850),
+    (450, 850), (350, 850), (250, 850), (150, 850), (50, 850),
+    (50, 950), (150, 950), (250, 950), (350, 950), (450, 950),
+    (450, 1050), (550, 1050), (650, 1050), (650, 1150), (550, 1150),
+    (450, 1150), (350, 1150), (250, 1150), (150, 1150), (50, 1150)
+]
+
+# Lista que se actualizará según el nivel actual
+BOARD_POSITIONS = []  # Inicialmente vacío, se actualizará dependiendo del nivel
 
 QUESTIONS = [
     {"question": "¿Cuál es el planeta más cercano al sol?", "options": ["Mercurio", "Venus", "Tierra", "Marte"], "answer": "Mercurio"},
@@ -38,22 +129,63 @@ QUESTIONS = [
     {"question": "¿Qué es la capital de Francia?", "options": ["París", "Londres", "Berlín", "Madrid"], "answer": "París"}
 ]
 
+current_level = 1
+# Función para actualizar las posiciones del tablero
+def update_board_positions(level):
+    global BOARD_POSITIONS  # Usamos la variable global BOARD_POSITIONS
+    
+    # Dependiendo del nivel, se asignan las posiciones
+    if level == 1:
+        BOARD_POSITIONS = LEVEL_1_POSITIONS
+    elif level == 2:
+        BOARD_POSITIONS = LEVEL_2_POSITIONS
+    elif level == 3:
+        BOARD_POSITIONS = LEVEL_3_POSITIONS
+    elif level == 4:
+        BOARD_POSITIONS = LEVEL_4_POSITIONS
+    elif level == 5:
+        BOARD_POSITIONS = LEVEL_5_POSITIONS
+    elif level == 6:
+        BOARD_POSITIONS = LEVEL_6_POSITIONS
+    elif level == 7:
+        BOARD_POSITIONS = LEVEL_7_POSITIONS
+    elif level == 8:
+        BOARD_POSITIONS = LEVEL_8_POSITIONS
+    elif level == 9:
+        BOARD_POSITIONS = LEVEL_9_POSITIONS
+    elif level == 10:
+        BOARD_POSITIONS = LEVEL_10_POSITIONS
+    
+    # Asegúrate de que BOARD_POSITIONS no esté vacío
+    if not BOARD_POSITIONS:
+        raise ValueError(f"Las posiciones del tablero no están definidas para el nivel {level}.")
+
 class Player:
-    def __init__(self, name, color, piece_image_path):
+    def __init__(self, name, color, piece_image_path, level=1):
         self.name = name
         self.color = color
-        self.position = 0
-        self.x, self.y = BOARD_POSITIONS[0]
+        self.position = 0  # El jugador comienza en la primera casilla
+
+        # Actualizar las posiciones del tablero según el nivel
+        update_board_positions(level)
+        
+        # Colocar la pieza en la primera casilla
+        self.x, self.y = BOARD_POSITIONS[0]  # Tomamos la primera posición del tablero actualizado
+
         self.correct_answers = 0
-        # Cargar la imagen de la pieza desde la ruta proporcionada
+
+        # Cargar la imagen de la pieza
         self.piece_image = pygame.image.load(piece_image_path)
-        self.piece_image = pygame.transform.scale(self.piece_image, (100, 100))  # Asegúrate de ajustar el tamaño
+        self.piece_image = pygame.transform.scale(self.piece_image, (100, 100))
     
     def move(self, steps):
+        # Moverse a través de las posiciones en BOARD_POSITIONS
         for _ in range(steps):
             if self.position < len(BOARD_POSITIONS) - 1:
                 self.position += 1
                 target_x, target_y = BOARD_POSITIONS[self.position]
+
+                # Movimiento suave del jugador
                 while (self.x, self.y) != (target_x, target_y):
                     if self.x < target_x:
                         self.x += 5
@@ -63,6 +195,8 @@ class Player:
                         self.y += 5
                     elif self.y > target_y:
                         self.y -= 5
+
+                    # Redibuja el tablero y actualiza la pantalla después de cada paso
                     draw_board()
                     pygame.display.update()
                     pygame.time.delay(50)
@@ -70,7 +204,7 @@ class Player:
     def auto_answer(self, question):
         selected_option = random.choice(question["options"])
         return selected_option
-
+    
 bot_piece_image = pygame.image.load('camino del saber/ficha6.png')
 bot_piece_image = pygame.transform.scale(bot_piece_image, (100, 100))
 
@@ -126,6 +260,11 @@ def draw_board():
     wel_bt = pygame.transform.scale(wel_bt, (WIDTH, HEIGHT))
     screen.blit(wel_bt, (0, 0))
 
+    # Asegurarse de que BOARD_POSITIONS esté actualizado antes de dibujar el tablero
+    # Aquí, asumiendo que tienes un "nivel actual" que seleccionaste previamente, 
+    # se actualiza el tablero en función de ese nivel.
+    update_board_positions(current_level) # Asegúrate de que `current_level` es el nivel actual seleccionado
+
     # Dibujar las posiciones del tablero
     for pos in BOARD_POSITIONS:
         pygame.draw.rect(screen, BLACK, pygame.Rect(pos[0], pos[1], 80, 80), 2)
@@ -150,11 +289,7 @@ def draw_board():
     # Dibujar el dado visualmente (lo que ya tienes implementado)
     dibujar_dado(screen, dice_roll, dice_area_rect.x + 10, dice_area_rect.y + 10, dice_area_size - 20)
 
-    # Mostrar el valor numérico del dado (en el centro del área)
-    dice_value_surface = fuente.render(str(dice_roll), True, BLACK)
-    screen.blit(dice_value_surface, (dice_area_rect.x + dice_area_size // 2 - dice_value_surface.get_width() // 2, 
-                                     dice_area_rect.y + dice_area_size // 2 - dice_value_surface.get_height() // 2))
-
+    
 def display_text(text, color=BLACK, y_offset=0):
     text_surface = fuente.render(text, True, color)
     screen.blit(text_surface, (20, HEIGHT - 120 + y_offset))
@@ -308,15 +443,15 @@ def seleccionar_nivel():
     screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT // 2 - 200))
     
     # Cargar las imágenes de los niveles (10 imágenes)
-    level_images = [pygame.image.load(f'camino del saber/nivel{i}.png') for i in range(1, 11)]  # Asumiendo que las imágenes están numeradas como 'nivel1.png', 'nivel2.png', ..., 'nivel10.png'
-    image_size = (100, 100)  # Tamaño para las imágenes de los niveles
-    level_images = [pygame.transform.scale(img, image_size) for img in level_images]  # Redimensionar las imágenes
+    level_images = [pygame.image.load(f'camino del saber/nivel{i}.png') for i in range(1, 11)]  
+    image_size = (100, 100)
+    level_images = [pygame.transform.scale(img, image_size) for img in level_images]
     
-    # Crear una lista para los rectángulos de los niveles, utilizados para la detección de clics
+    # Crear una lista para los rectángulos de los niveles
     level_rects = []
     button_width, button_height = image_size
     
-    # Distribuir las imágenes de los niveles en una cuadrícula de 5 columnas y 2 filas (10 niveles en total)
+    # Distribuir las imágenes de los niveles
     for i in range(10):
         col = i % 5  # 5 columnas
         row = i // 5  # 2 filas
@@ -325,7 +460,7 @@ def seleccionar_nivel():
                                  button_width, button_height)
         level_rects.append(level_rect)
         
-        # Dibujar la imagen del nivel en su respectiva posición
+        # Dibujar la imagen del nivel
         screen.blit(level_images[i], level_rect.topleft)
     
     pygame.display.update()
@@ -343,7 +478,15 @@ def seleccionar_nivel():
                         selected_level = i + 1  # El nivel seleccionado será el índice + 1
                         break
 
+    # Asignar el nivel seleccionado a la variable global `current_level`
+    global current_level
+    current_level = selected_level
+
+    # Llamar a la función para actualizar las posiciones del tablero
+    update_board_positions(current_level)
+
     return selected_level
+
 
 def seleccionar_ficha():
     screen.fill(WHITE)
@@ -519,7 +662,8 @@ def main():
     segundo_screen()
     tercer_web()
     show_start_screen()
-    seleccionar_nivel()
+    level_selected = seleccionar_nivel()
+    update_board_positions(level_selected)
     
     global dice_roll, current_player
     # Solicitar el nombre del jugador y la ficha
@@ -533,7 +677,6 @@ def main():
     # Configuración de variables globales
     current_player = 0
     clock = pygame.time.Clock()
-    
     # Bucle principal del juego
     while True:
         for event in pygame.event.get():
