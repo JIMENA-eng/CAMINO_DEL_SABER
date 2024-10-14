@@ -4,6 +4,7 @@ import time
 
 
 pygame.init()
+pygame.mixer.init()
 
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # Esto hace que la ventana sea pantalla completa
 WIDTH, HEIGHT = screen.get_size()  # Obtiene el tamaño de la pantalla completa
@@ -160,6 +161,34 @@ def update_board_positions(level):
     if not BOARD_POSITIONS:
         raise ValueError(f"Las posiciones del tablero no están definidas para el nivel {level}.")
 
+def reproducir_musica(nivel):
+    # Detener cualquier música previa
+    pygame.mixer.music.stop()
+
+    # Determinar qué música reproducir según el nivel
+    if nivel == 1:
+        pygame.mixer.music.load('camino del saber/music1.mp3')
+    elif nivel == 2:
+        pygame.mixer.music.load('camino del saber/music2.mp3')
+    elif nivel == 3:
+        pygame.mixer.music.load('camino del saber/music3.mp3')
+    elif nivel == 4:
+        pygame.mixer.music.load('camino del saber/music4.mp3')
+    elif nivel == 5:
+        pygame.mixer.music.load('caminos del saber/music5.mp3')
+    elif nivel == 6:
+        pygame.mixer.music.load('caminos del saber/music6.mp3')
+    elif nivel == 7:
+        pygame.mixer.music.load('camino del saber/music7.mp3')
+    elif nivel == 8:
+        pygame.mixer.music.load('camino del saber/music8.mp3')
+    elif nivel == 9:
+        pygame.mixer.music.load('camino del saber/music9.mp3')
+    elif nivel == 10:
+        pygame.mixer.music.load('camino del saber/music10.mp3')
+
+    # Reproducir la música en un bucle (puedes cambiar el -1 a 0 si no quieres que se repita)
+    pygame.mixer.music.play(-1)
 class Player:
     def __init__(self, name, color, piece_image_path, level=1):
         self.name = name
@@ -484,6 +513,7 @@ def seleccionar_nivel():
 
     # Llamar a la función para actualizar las posiciones del tablero
     update_board_positions(current_level)
+    reproducir_musica(current_level)
 
     return selected_level
 
